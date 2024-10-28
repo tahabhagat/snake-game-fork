@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from flask import Flask, render_template, request, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 import datetime
 from waitress import serve
 from flask_cors import CORS
@@ -42,6 +43,15 @@ class Score(db.Model):
 
     def __str__(self):
         return f"{self.score} scored by user {self.user_id} at {self.scored_at} ({self.time_taken_seconds} seconds)"
+
+
+def get_scoreboard_pair(user: User, score: Score):
+    return {
+        "username": user.username,
+        "score": score.score,
+        "timeTakenSeconds": score.time_taken_seconds,
+        "scoredAt": score.scored_at,
+    }
 
 
 def get_scoreboard_pair(user: User, score: Score):
@@ -100,13 +110,45 @@ def get_scoreboard():
     query = db.session.query(User, Score).join(Score, User.user_id == Score.user_id)
     if username:
         query = query.filter(User.username.like(f"%{username}%"))
-    query = (
-        query.order_by(Score.score.desc(), Score.scored_at.asc())
-        .slice(page - 1, per_page)
-        .all()
+    query = query.order_by(Score.score.desc(), Score.scored_at.asc()).slice(
+        page - 1, per_page
     )
+    result = query.all()
+
     return jsonify(
-        [get_scoreboard_pair(user=user, score=score) for user, score in query]
+        [get_scoreboard_pair(user=user, score=score) for user, score in result]
+    )
+
+
+@app.route("/api/top-score")
+def get_top_scoreboard():
+    page = int(request.args.get("page", 1))
+    per_page = int(request.args.get("per_page", 10))
+    username = request.args.get("username", None)
+
+    query = (
+        db.session.query(
+            User, func.max(Score.score).label("max_score"), Score.scored_at
+        )
+        .join(Score, User.user_id == Score.user_id)
+        .group_by(User.user_id)
+    )
+
+    if username:
+        query = query.filter(User.username.like(f"%{username}%"))
+    query = query.order_by(Score.score.desc(), Score.scored_at.asc()).slice(
+        page - 1, per_page
+    )
+
+    result = query.all()
+
+    return jsonify(
+        [
+            get_scoreboard_pair(
+                user=user, score=Score(scored_at=scored_at, score=score)
+            )
+            for user, score, scored_at in result
+        ]
     )
 
 
