@@ -128,7 +128,10 @@ def get_top_scoreboard():
 
     query = (
         db.session.query(
-            User, func.max(Score.score).label("max_score"), Score.scored_at
+            User,
+            func.max(Score.score).label("max_score"),
+            Score.scored_at,
+            Score.time_taken_seconds,
         )
         .join(Score, User.user_id == Score.user_id)
         .group_by(User.user_id)
@@ -145,9 +148,14 @@ def get_top_scoreboard():
     return jsonify(
         [
             get_scoreboard_pair(
-                user=user, score=Score(scored_at=scored_at, score=score)
+                user=user,
+                score=Score(
+                    scored_at=scored_at,
+                    score=score,
+                    time_taken_seconds=time_taken_seconds,
+                ),
             )
-            for user, score, scored_at in result
+            for user, score, scored_at, time_taken_seconds in result
         ]
     )
 
