@@ -404,6 +404,7 @@ function loop() {
       if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
 
         ScoreService.sendScoreToSave(username, currentScore.value, 60);
+        currentScore.value = 0;
 
         snake = new Snake(160, 160, grid);
 
