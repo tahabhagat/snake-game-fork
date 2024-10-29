@@ -19,24 +19,114 @@
       canvas {
         border: 1px solid white;
       }
+
+      /* Style the popup container */
+      #popup-container {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        /* display: none; */
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      /* Style the popup content */
+      #popup-content {
+        background-color: #fff;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        width: 300px;
+        height: 200px;
+        text-align: center;
+      }
+
+      /* Style the close button */
+      #popup-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 18px;
+        cursor: pointer;
+      }
+
+      /* Style the trigger button */
+      #popup-trigger {
+        background-color: #4caf50;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      /* Show the popup when the trigger button is clicked */
+      #popup-trigger:hover {
+        background-color: #3e8e41;
+      }
     </style>
   </head>
   <body>
+    <!-- The popup container -->
+    <div id="popup-container" class="hidden">
+      <!-- The popup content -->
+      <div id="popup-content">
+        <h2>Popup Title</h2>
+        <p>This is the popup content.</p>
+        <button id="popup-close">Close</button>
+      </div>
+    </div>
+    <!-- The trigger button -->
+    <!-- <button id="popup-trigger" style="position: absolute; left: -0px">
+      Open Popup
+    </button> -->
+    <div class="score-container" style="position: absolute; left: 10px">
+      <div class="score" id="current-score">12</div>
+      <div class="score" id="personal-best">60</div>
+    </div>
     <canvas width="500" height="500" id="game"></canvas>
-    <table id="leaderboard">
-      <thead>
-        <tr>
-          <th>Username</th>
-          <th>Score</th>
-          <th>Scored At</th>
-          <th>Time Taken (s)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- leaderboard rows will be inserted here -->
-      </tbody>
-    </table>
+    <div class="leaderboard-container" style="position: absolute; right: 10px">
+      <table id="leaderboard">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Score</th>
+            <th>Scored At</th>
+            <th>Time Taken (s)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
     <script>
+      // Get the popup container and trigger button
+      const popupContainer = document.getElementById("popup-container");
+      // const popupTrigger = document.getElementById("popup-trigger");
+      const popupClose = document.getElementById("popup-close");
+      const current_score_dom = document.getElementById("current-score");
+      const personal_best_dom = document.getElementById("personal-best");
+
+      // Add an event listener to the trigger button
+      // popupTrigger.addEventListener("click", () => {
+      //   // Show the popup container
+      //   console.log("opening popup");
+      //   popupContainer.classList.remove("hidden");
+      // });
+
+      // Add an event listener to the close button
+      popupClose.addEventListener("click", () => {
+        // Hide the popup container
+        popupContainer.classList.add("hidden");
+      });
+
       var canvas = document.getElementById("game");
       var context = canvas.getContext("2d");
       const leaderboard = document.getElementById("leaderboard");
@@ -55,7 +145,7 @@
       function get_scores() {
         console.log("fetching scores");
         // console.log(leaderboard.tBodies);
-        const url = API_BASE_URL + "score";
+        const url = API_BASE_URL + "top-score";
         const options = {
           method: "GET",
           params: new URLSearchParams({
@@ -455,18 +545,7 @@
               // snake.maxCells = SNAKE_INITIAL_LENGTH;
               // snake.dx = grid;
               // snake.dy = 0;
-
-              console.log(
-                "checking",
-                personal_best_score,
-                "||||||||",
-                snake.score
-              );
-              if (pb_broken) {
-                console.log("sending");
-                send_score_to_save(username, snake.score, 60);
-                pb_broken = false;
-              }
+              send_score_to_save(username, snake.score, 60);
 
               snake = new Snake(160, 160, grid);
 
@@ -536,7 +615,7 @@
       #leaderboard {
         font-family: Arial, sans-serif;
         font-size: 16px;
-        width: 800px;
+        width: 200px;
         margin: 0 auto;
         padding: 20px;
         border: 1px solid #ccc;
@@ -555,9 +634,9 @@
         border-bottom: 1px solid #ccc;
       }
 
-      #leaderboard tr:hover {
+      /* #leaderboard tr:hover {
         background-color: #f2f2f2;
-      }
+      } */
 
       #leaderboard th,
       #leaderboard td {
