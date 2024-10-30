@@ -1,59 +1,120 @@
 <template>
 
+  <div class="parent">
+    <div class="left-side-container child">
+      <div class="score-container" style="height: 200px; ">
+        <div class="score" id="current-score">
+          <Score title="Score" :score="currentScore"></Score>
+        </div>
+        <div class="score" id="personal-best" style="margin-top: 20px;">
+          <Score title="Personal Best" :score="personalBest"></Score>
+        </div>
+      </div>
+      <div class="instruction-container">Instructions:<div v-for="(instruction, index) in instuctions"> {{ index + 1 }}.
+          {{
+            instruction
+          }}
+        </div>
+      </div>
 
-  <div class="score-container" style="position: absolute; left: 10px">
-    <div class="score" id="current-score">Score: {{ currentScore }}</div>
-    <div class="score" id="personal-best">PB: {{ personalBest }}</div>
-  </div>
+    </div>
 
-  <canvas width="500" height="500" id="game"></canvas>
 
-  <div class="leaderboard-container" style="position: absolute; right: 10px">
-    <table id="leaderboard">
-      <thead>
-        <tr>
-          <th>Username</th>
-          <th>Score</th>
-          <th>Scored At</th>
-          <th>Time Taken (s)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="score in top_scores">
-          <td>{{ score.username }}</td>
-          <td>{{ score.score }}</td>
-          <td>{{ new Date(score.scoredAt).toLocaleString() }}</td>
-          <td>{{ formatTime(score.timeTakenSeconds) }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="child game-container">
+      <canvas width="500" height="500" id="game"></canvas>
+    </div>
+    <div class="leaderboard-container child">
+      <table id="leaderboard">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Score</th>
+            <th>Scored At</th>
+            <th>Time Taken</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(score, index) in topScores" :class="{ 'champion': index === 0 }">
+            <td :class="{ 'no-bottom': index === topScores.length - 1 }">
+              <div style="display: flex; align-items: center;">
+                <img src="/crown.svg" width="25px" v-if="index === 0">
+                <div width="20px" v-else style="width: 20px;"></div>
+
+                <div>{{ truncateText(score.username) }}</div>
+                <!-- <div>ssdddddddddddddddddds</div> -->
+              </div>
+            </td>
+            <td :class="{ 'no-bottom': index === topScores.length - 1 }">{{ score.score }}</td>
+            <td :class="{ 'no-bottom': index === topScores.length - 1 }">{{ new
+              Date(score.scoredAt).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }) }}</td>
+            <td :class="{ 'no-bottom': index === topScores.length - 1 }">{{ formatTime(score.timeTakenSeconds) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref, watch, computed } from "vue";
 import ScoreService from "./services/ScoreService";
+import Score from './components/Score.vue'
 
-const top_scores = ref([]);
+
+const instuctions = ref(["Move with arrow keys/WASD/IJKL", "Eat the 404", "Don't touch your tail", "Pause/Unpause with Esc"])
+
+function truncateText(text) {
+  const maxLength = 10
+  if (text.length > maxLength) {
+    return text.substring(0, maxLength - 3) + '...';
+  } else {
+    return text;
+  }
+}
+
+const time_counter_seconds = ref(0);
+
+setInterval(() => { time_counter_seconds + 1 }, 1000);
+
+const game_start_time_seconds = ref(0)
+
+const topScores = ref([]);
 
 const personalBest = ref(0);
 
 const currentScore = ref(0);
 
-function formatTime(timeTaken) {
-  const hours = Math.floor(timeTaken / 3600);
-  const minutes = Math.floor((timeTaken % 3600) / 60);
-  const seconds = timeTaken % 60;
+function formatTime(totalSeconds) {
+  // const hours = Math.floor(timeTaken / 3600);
+  // const minutes = Math.floor((timeTaken % 3600) / 60);
+  // const seconds = timeTaken % 60;
 
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  // return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+  let minutes = Math.floor(totalSeconds / 60);
+  let seconds = Math.round(totalSeconds % 60);
+
+  return `${minutes}m ${seconds}s`;
 }
+
+
+const updateHighscoresEvent = new CustomEvent('updateHighscores', {
+  bubbles: false, // prevent event from bubbling up the DOM
+  cancelable: true // allow event to be cancelled
+});
+
+
+// Listen for the updateHighscores event
+window.addEventListener('updateHighscores', async (event) => {
+  topScores.value = await ScoreService.getScores();
+});
 
 async function setupScores() {
   personalBest.value = localStorage.getItem("personal_best") ?? 0;
 
-  top_scores.value = await ScoreService.getScores();
+  window.dispatchEvent(updateHighscoresEvent);
   setInterval(async () => {
-    top_scores.value = await ScoreService.getScores();
+    window.dispatchEvent(updateHighscoresEvent);
   }, 5000);
 }
 
@@ -130,6 +191,7 @@ class Snake {
     this.cells = [];
     this.maxCells = SNAKE_INITIAL_LENGTH;
     this.autoplay = false;
+    this.birthDatetime = new Date()
   }
 
   queue_turn_left() {
@@ -161,7 +223,7 @@ class Snake {
 
   increase_length() {
     this.maxCells++;
-    currentScore.value++
+    currentScore.value += 1
   }
 
   calculateGradient(i, firstColor, secondColor) {
@@ -402,9 +464,10 @@ function loop() {
       // snake occupies same space as a body part. reset game
       // Death
       if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
-
-        ScoreService.sendScoreToSave(username, currentScore.value, 60);
+        let timeTakenSeconds = (new Date().getTime() - snake.birthDatetime.getTime()) / 1000;
+        ScoreService.saveScore(username, currentScore.value, timeTakenSeconds);
         currentScore.value = 0;
+        window.dispatchEvent(updateHighscoresEvent);
 
         snake = new Snake(160, 160, grid);
 
@@ -414,57 +477,78 @@ function loop() {
     }
   });
 
-  // Draw score
-  context.font = "50px serif";
-  context.fillStyle = "#ffcb74";
-  context.fillText(currentScore.value, 400, 40);
+  // // Draw score
+  // context.font = "50px serif";
+  // context.fillStyle = "#ffcb74";
+  // context.fillText(currentScore.value, 400, 40);
 
-  // Draw highscore
-  context.font = "50px serif";
-  context.fillStyle = "#ffcb74";
-  // context.fillText(
-  //   personal_best_score ? personal_best_score : 0,
-  //   450,
-  //   40
-  // );
-  context.fillText(personalBest.value, 450, 40);
+  // // Draw highscore
+  // context.font = "50px serif";
+  // context.fillStyle = "#ffcb74";
+  // // context.fillText(
+  // //   personal_best_score ? personal_best_score : 0,
+  // //   450,
+  // //   40
+  // // );
+  // context.fillText(personalBest.value, 450, 40);
 }
+
+
+const autoplayCheat = 'aspirine'.split('');
+let autoplayCheatPointer = 0
 
 // listen to keyboard events to move the snake
 document.addEventListener("keydown", function (e) {
 
+  console.log(e.key)
   if (game_paused) {
     console.log("unpausing");
     unpause_game();
   }
+
   // p key
-  else if (e.key === "p") {
+  else if (e.key === "Escape") {
     console.log("pause called", game_paused);
     pause_game();
   }
 
+  if (e.key === autoplayCheat[autoplayCheatPointer]) {
+    autoplayCheatPointer += 1
+    if (autoplayCheatPointer === autoplayCheat.length) {
+      snake.autoplay = true;
+      console.log("Cheating: autoplay toggled");
+      return
+    }
+  } else {
+    autoplayCheatPointer = 0
+  }
+
   // left arrow key
   if ((e.key === "ArrowLeft" || e.key === "a" || e.key === "j") && snake.dx === 0) {
+    snake.autoplay = false;
     snake.queue_turn_left();
   }
   // up arrow key
   else if ((e.key === "ArrowUp" || e.key === "w" || e.key === "i") && snake.dy === 0) {
+    snake.autoplay = false;
     snake.queue_turn_up();
   }
   // right arrow key
   else if ((e.key === "ArrowRight" || e.key === "d" || e.key === "l") && snake.dx === 0) {
+    snake.autoplay = false;
     snake.queue_turn_right();
   }
   // down arrow key
   else if ((e.key === "ArrowDown" || e.key === "s" || e.key === "k") && snake.dy === 0) {
+    snake.autoplay = false;
     snake.queue_turn_down();
   }
-  // c key
-  else if (e.key === "c") {
-    snake.autoplay = !snake.autoplay;
+  // // c key
+  // else if (e.key === "c") {
+  //   snake.autoplay = !snake.autoplay;
 
-    console.log("Cheating: autoplay toggled");
-  }
+  //   console.log("Cheating: autoplay toggled");
+  // }
 });
 </script>
 
@@ -483,19 +567,84 @@ body {
 } */
 
 canvas {
-  border: 1px solid white;
+  border: 1px solid #ccc;
 }
+
+
+
+
+.parent {
+  width: 100%;
+  padding-left: 0;
+  margin-left: 0;
+  margin-right: 0;
+  box-sizing: border-box;
+  display: flex;
+  /* width: 100%; */
+  justify-content: space-between;
+  /* border: 1px green solid; */
+
+  align-items: center;
+  /* width: 100vw; */
+  /* height: 100vh;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0; */
+}
+
+.child {
+  /* Child 1 takes up 40% of the space */
+  /* margin: 0 10px; */
+  margin: 10px;
+  /* add some margin to create a gap between the child elements */
+}
+
+.game-container {
+
+  /* margin-top: 4%; */
+  width: 500px;
+  top: 100px
+}
+
+.left-side-container {
+
+  /* border: red 1px solid; */
+  width: 250px;
+}
+
+.score-container {
+  /* border: green 1 px solid; */
+
+}
+
+.instruction-container {
+  /* border: yellow 1px solid; */
+
+  /* border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 10px; */
+  color: #ccc;
+}
+
+.leaderboard-container {
+
+  /* border: green 1px solid; */
+  width: 450px;
+}
+
 
 
 #leaderboard {
   font-family: Arial, sans-serif;
-  font-size: 16px;
-  width: 200px;
-  margin: 0 auto;
-  padding: 20px;
+  font-size: 14px;
+  width: 450px;
+  /* margin-right: 2%; */
+  /* margin-left: 0; */
+  /* margin: 0 auto; */
+  /* padding: 20px; */
   border: 1px solid #ccc;
   border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); */
 }
 
 #leaderboard th {
@@ -503,11 +652,18 @@ canvas {
   color: white;
   padding: 10px;
   border-bottom: 1px solid #ccc;
+
 }
+
 
 #leaderboard td {
   padding: 10px;
   border-bottom: 1px solid #ccc;
+}
+
+#leaderboard .no-bottom {
+  /* padding: 10px; */
+  border-bottom: 0px solid #ccc;
 }
 
 /* #leaderboard tr:hover {
@@ -521,21 +677,34 @@ canvas {
 
 #leaderboard th:first-child,
 #leaderboard td:first-child {
-  width: 20%;
+  width: 10%;
 }
 
 #leaderboard th:nth-child(2),
 #leaderboard td:nth-child(2) {
-  width: 30%;
+  width: 20%;
 }
 
 #leaderboard th:nth-child(3),
 #leaderboard td:nth-child(3) {
-  width: 20%;
+  width: 35%;
 }
 
 #leaderboard th:nth-child(4),
 #leaderboard td:nth-child(4) {
-  width: 30%;
+  width: 25%;
 }
+
+
+.champion {
+  color: #ffcb74;
+}
+
+/* 
+TODO:
+1. Fix score  
+2. Favicon ------------------ Done
+3. Instructions
+4. Cheats - properly -------------Done
+*/
 </style>

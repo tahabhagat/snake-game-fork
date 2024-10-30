@@ -18,7 +18,7 @@ export default {
         }
     },
 
-    async sendScoreToSave(username, score, timeTakenSeconds) {
+    async saveScore(username, score, timeTakenSeconds) {
         console.log("saving score");
 
         try {
