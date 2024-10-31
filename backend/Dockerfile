@@ -1,5 +1,6 @@
 # Use an official Python runtime as a parent image
-FROM 3.11.10-bookworm
+FROM python:3.11.10-bookworm
+
 
 # Set the user to snake
 RUN adduser -m snake
