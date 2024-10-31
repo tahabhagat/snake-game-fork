@@ -51,7 +51,8 @@ class Score(db.Model):
 
 
 # Create the tables
-metadata.create_all(db, checkfirst=True)
+User.__table__.create(checkfirst=True)
+Score.__table__.create(checkfirst=True)
 
 
 def get_scoreboard_pair(user: User, score: Score):
