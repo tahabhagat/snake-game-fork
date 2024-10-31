@@ -1,14 +1,15 @@
 # Use an official Python runtime as a parent image
 FROM python:3.11-slim
 
+# Set the user to snake
+RUN useradd -m -s /bin/bash snake
+USER snake
+
 # Set the working directory to /app
 WORKDIR /app
 
-# Set the user to snake
-USER snake
-
 # Copy the requirements file
-COPY requirements.txt main.py ./
+COPY --chown=snake:snake requirements.txt main.py ./
 
 # Install the dependencies
 RUN pip install -r requirements.txt
