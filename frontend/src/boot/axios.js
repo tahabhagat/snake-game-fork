@@ -11,11 +11,11 @@ let hostName = window.location.hostname;
 let protocol = window.location.protocol;
 let port = window.location.port;
 
-// const API_BASE_URL = "http://localhost:5000/api/";
+const API_BASE_URL = "http://lockhart.in:8000/api/";
 
 const api = axios.create({
 
-    baseURL: protocol + "//" + hostName + ":" + port + "/api",
+    // baseURL: protocol + "//" + hostName + ":" + port + "/api",
     baseURL: API_BASE_URL,
     withCredentials: false,
     headers: {
