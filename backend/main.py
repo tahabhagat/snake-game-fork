@@ -164,6 +164,6 @@ if __name__ == "__main__":
     # app.run("0.0.0.0", debug=True)
     print("BOOTING UP THE REACTORS!!!")
     host = "0.0.0.0"
-    port = 5000
+    port = 8000
     print(f"STARTING WEBSERVER ON {host}:{port}")
     serve(app=app, host=host, port=port, threads=10)
