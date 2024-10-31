@@ -5,6 +5,7 @@ from sqlalchemy import func
 import datetime
 from waitress import serve
 from flask_cors import CORS
+from sqlalchemy.sql.schema import MetaData
 
 
 app = Flask(
@@ -15,6 +16,10 @@ CORS(app)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/score.db"
 db = SQLAlchemy(app)
+
+
+# Create the metadata
+metadata = MetaData()
 
 
 @dataclass
@@ -43,6 +48,10 @@ class Score(db.Model):
 
     def __str__(self):
         return f"{self.score} scored by user {self.user_id} at {self.scored_at} ({self.time_taken_seconds} seconds)"
+
+
+# Create the tables
+metadata.create_all(db, checkfirst=True)
 
 
 def get_scoreboard_pair(user: User, score: Score):
