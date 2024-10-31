@@ -7,15 +7,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Switch to frontend directory
-        run: cd frontend
-      - name: npm install
-        run: npm install
-      - name: npm build
-        run: npm run build
-      - name: switch to dist
-        run: cd dist
-      - name: Initialize Git
+      - name: Do everything
         run: |
+          cd frontend
+          npm install
+          npm run build
+          cd dist
           git config --global user.email "dsouzajenslee@gmail.com"
           git config --global user.name "Jenslee"
           git init
