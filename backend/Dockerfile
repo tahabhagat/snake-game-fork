@@ -22,4 +22,4 @@ EXPOSE 8000
 LABEL maintainer="Jenslee Dsouza <dsouzajenslee@gmail.com>"
 
 # Run the command to start the application
-CMD ["python", "main.py"]
+CMD ["python", "-u", "main.py"]
