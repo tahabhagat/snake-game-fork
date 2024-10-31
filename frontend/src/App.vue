@@ -285,22 +285,32 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
-var count = 0;
+var frameCount = 0;
 
+let msPrev = window.performance.now()
+const fps = 60
+const msPerFrame = 1000 / fps
 // game loop
 function loop() {
-  if (!game_paused) {
-    requestAnimationFrame(loop);
+  if (game_paused) {
+    return
   }
+  requestAnimationFrame(loop);
+  const msNow = window.performance.now()
+  const msPassed = msNow - msPrev
+
+  if (msPassed < msPerFrame) return
+  const excessTime = msPassed % msPerFrame
+  msPrev = msNow - excessTime
 
   // console.log("dfsfs", localStorage.getItem("lastname"));
 
   // slow game loop to 15 fps instead of 60 (60/15 = 4)
-  if (++count < 4) {
+  if (++frameCount < 4) {
     return;
   }
+  frameCount = 0;
 
-  count = 0;
   if (snake.autoplay) {
     snake.doOptimalMove(snake.x, snake.y);
   }
@@ -479,10 +489,10 @@ function loop() {
     }
   });
 
-  // // Draw score
-  // context.font = "50px serif";
-  // context.fillStyle = "#ffcb74";
-  // context.fillText(currentScore.value, 400, 40);
+  // Draw score
+  context.font = "50px serif";
+  context.fillStyle = "#ffcb74";
+  // context.fillText(1000 / msPerFrame, 400, 40);
 
   // // Draw highscore
   // context.font = "50px serif";
