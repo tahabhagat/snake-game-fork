@@ -13,7 +13,7 @@ app = Flask(
 CORS(app)
 
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///games.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/score.db"
 db = SQLAlchemy(app)
 
 

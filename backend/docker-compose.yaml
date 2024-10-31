@@ -1,0 +1,10 @@
+services:
+  high-score-service:
+    image: ghcr.io/lockhart07/snake-game:latest
+    tty: false
+    stdin_open: false
+    ports:
+      - "8000:8000"
+    volumes:
+      # attach the relative directory 'data' to the container's /data path
+      - /mnt/snake-game:/data
