@@ -13,10 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set github hash
-        run: echo ${GITHUB_SHA::7} | tee /dev/tty | export GITHUB_HASH=-
+        run: echo ${GITHUB_SHA::7}
       - name: Build the Docker image
         working-directory: ./backend
-        run: docker build . --file Dockerfile --tag ghcr.io/LOCKhart07/snake-game:${GITHUB_HASH::7}
+        run: docker build . --file Dockerfile --tag ghcr.io/LOCKhart07/snake-game:${GITHUB_SHA::7}
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
