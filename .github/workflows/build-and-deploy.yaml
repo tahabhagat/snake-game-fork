@@ -6,7 +6,6 @@ jobs:
     name: Build Vue
     steps:
       - uses: actions/checkout@v2
-      - name: Switch to frontend directory
       - name: Do everything
         run: |
           cd frontend
