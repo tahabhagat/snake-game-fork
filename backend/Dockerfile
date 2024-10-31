@@ -1,6 +1,8 @@
 # Use an official Python runtime as a parent image
 FROM python:3.11
 
+RUN ln -sf /bin/bash /bin/sh
+
 # Set the user to snake
 RUN adduser -m snake
 USER snake
