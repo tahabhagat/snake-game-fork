@@ -16,11 +16,11 @@ jobs:
         run: echo ${GITHUB_SHA::7}
       - name: Build the Docker image
         working-directory: ./backend
-        run: docker build . --file Dockerfile --tag ghcr.io/LOCKhart07/snake-game:${GITHUB_SHA::7}
+        run: docker build . --file Dockerfile --tag ghcr.io/lockhart07/snake-game:${GITHUB_SHA::7}
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.GITHUB_USERNAME }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push the Docker image to GitHub Container Registry
-        run: docker push --all-tags ghcr.io/LOCKhart07/snake-game
+        run: docker push --all-tags ghcr.io/lockhart07/snake-game
