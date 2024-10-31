@@ -1,0 +1,30 @@
+name: Build and Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Switch to frontend dir
+        run: cd frontend
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the project
+        run: npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: gh-pages/deploy@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+          target: gh-pages
+          build: .
