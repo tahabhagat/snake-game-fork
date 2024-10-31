@@ -3,7 +3,7 @@ FROM python:3.11.10-bookworm
 
 
 # Set the user to snake
-RUN adduser -m snake
+RUN useradd -m snake
 USER snake
 
 # Set the working directory to /app
