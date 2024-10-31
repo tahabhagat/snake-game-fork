@@ -2,7 +2,7 @@
 FROM python:3.11-slim
 
 # Set the user to snake
-RUN useradd -m -s /bin/bash snake
+RUN useradd -m snake
 USER snake
 
 # Set the working directory to /app
