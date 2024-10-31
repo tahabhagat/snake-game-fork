@@ -23,4 +23,4 @@ jobs:
           username: ${{ secrets.GITHUB_USERNAME }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push the Docker image to GitHub Container Registry
-        run: docker push ghcr.io/LOCKhart07/snake-game:${GITHUB_HASH}
+        run: docker push --all-tags ghcr.io/LOCKhart07/snake-game
