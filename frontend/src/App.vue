@@ -1,10 +1,11 @@
 <template>
+  <Alert v-show="isAlertShown" :text="alertText"></Alert>
 
   <div class="parent">
     <div class="left-side-container child">
       <div class="score-container" style="height: 200px; ">
         <div class="score" id="current-score">
-          <Score title="Score" :score="currentScore"></Score>
+          <Score title="Score" :score=currentScore></Score>
         </div>
         <div class="score" id="personal-best" style="margin-top: 20px;">
           <Score title="Personal Best" :score="personalBest"></Score>
@@ -59,6 +60,7 @@
 import { onMounted, ref, watch, computed } from "vue";
 import ScoreService from "./services/ScoreService";
 import Score from './components/Score.vue'
+import Alert from "./components/Alert.vue";
 
 
 const instuctions = ref(["Move with arrow keys/WASD/IJKL", "Eat the 404", "Don't touch your tail", "Pause/Unpause with Esc"])
@@ -493,14 +495,27 @@ function loop() {
   // context.fillText(personalBest.value, 450, 40);
 }
 
+const alertText = ref("")
+const isAlertShown = ref(false)
+function showAlert(text) {
+  console.log("shwoing alert")
+  alertText.value = text
+  isAlertShown.value = true
 
+  setTimeout(() => {
+    isAlertShown.value = false
+  }, 2000);
+}
+
+
+const CHEATING_ALERT_TEXT = "Autoplay enabled"
+const CHEATING_ALERT_DISABLED_TEXT = "Autoplay enabled"
 const autoplayCheat = 'aspirine'.split('');
 let autoplayCheatPointer = 0
 
 // listen to keyboard events to move the snake
 document.addEventListener("keydown", function (e) {
 
-  console.log(e.key)
   if (game_paused) {
     console.log("unpausing");
     unpause_game();
@@ -516,7 +531,7 @@ document.addEventListener("keydown", function (e) {
     autoplayCheatPointer += 1
     if (autoplayCheatPointer === autoplayCheat.length) {
       snake.autoplay = true;
-      console.log("Cheating: autoplay toggled");
+      showAlert(CHEATING_ALERT_TEXT)
       return
     }
   } else {
@@ -614,6 +629,7 @@ canvas {
 
 .score-container {
   /* border: green 1 px solid; */
+  margin-bottom: 100px;
 
 }
 
@@ -623,6 +639,8 @@ canvas {
   /* border: 1px solid #ccc;
   border-radius: 10px;
   padding: 10px; */
+  font-family: 'Fantasy';
+
   color: #ccc;
 }
 
@@ -706,5 +724,6 @@ TODO:
 2. Favicon ------------------ Done
 3. Instructions
 4. Cheats - properly -------------Done
+5. Cheat notification
 */
 </style>

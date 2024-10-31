@@ -3,7 +3,6 @@ import { api } from "../boot/axios";
 export default {
 
     async getScores() {
-        console.log("fetching scores");
         const params = {
             page: 1,
             per_page: 10,
@@ -11,16 +10,14 @@ export default {
 
         try {
             const response = await api.get("/top-score", { params });
-            const data = response.data;
-            return data
+            return response.data;
+
         } catch (error) {
             console.error(error);
         }
     },
 
     async saveScore(username, score, timeTakenSeconds) {
-        console.log("saving score");
-
         try {
             await api.post('/score', {
                 username,

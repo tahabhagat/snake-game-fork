@@ -1,5 +1,10 @@
 <template>
-    <button class="button-53" role="button">{{ title }} {{ score }}</button>
+    <button class="button-53" role="button">
+        <div class="button-content">
+            <div class="title">{{ title }}</div>
+            <div class="score">{{ score }}</div>
+        </div>
+    </button>
 </template>
 
 <script setup>
@@ -12,6 +17,29 @@ defineProps({
 
 </script>
 <style scoped>
+/* .button-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: .75rem 1.65rem;
+} */
+
+.title {
+    padding-top: 0%;
+    margin-top: -0.5rem;
+    height: 15px;
+    font-size: 15px;
+    color: rgb(29, 29, 29)
+}
+
+
+.score {
+    margin-top: 10px;
+    font-size: 30px !important
+        /* color: #666; */
+}
+
 /* CSS */
 .button-53 {
     background-color: #ffcb74;
@@ -33,7 +61,7 @@ defineProps({
     max-width: 460px;
     position: relative;
     cursor: pointer;
-    transform: rotate(-2deg);
+    /* transform: rotate(-2deg); */
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
@@ -56,12 +84,5 @@ defineProps({
 .button-53:hover:after {
     bottom: 2px;
     left: 2px;
-}
-
-@media (min-width: 768px) {
-    .button-53 {
-        padding: .75rem 3rem;
-        font-size: 1.25rem;
-    }
 }
 </style>
