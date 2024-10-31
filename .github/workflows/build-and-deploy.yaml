@@ -6,6 +6,8 @@ jobs:
     name: Build Vue
     steps:
       - uses: actions/checkout@v2
+      - name: Switch to frontend directory
+        run: cd frontend
       - id: Build-Vue
         uses: xRealNeon/VuePagesAction@1.0.1
         with:
