@@ -1,8 +1,8 @@
 services:
   high-score-service:
     image: ghcr.io/lockhart07/snake-game:latest
-    tty: false
-    stdin_open: false
+    tty: true
+    stdin_open: true
     ports:
       - "8000:8000"
     volumes:
