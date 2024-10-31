@@ -1,22 +1,14 @@
 # Use an official Python runtime as a parent image
 FROM python:3.11.10-bookworm
 
-
-# Set the user to snake
-RUN useradd -m snake
-USER snake
-
 # Set the working directory to /app
 WORKDIR /app
 
 # Copy the requirements file
-COPY --chown=snake:snake requirements.txt main.py ./
+COPY requirements.txt main.py ./
 
 # Install the dependencies
 RUN pip install -r requirements.txt
-
-# Copy the application code
-COPY . .
 
 # Expose the port
 EXPOSE 8000
