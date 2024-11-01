@@ -108,7 +108,7 @@ def validate_request(f):
             json_data = json.loads(data)
 
             timestamp_from_request = int(json_data["timestamp"])
-            if abs(current_time - timestamp_from_request) <= 15:
+            if abs(current_time - timestamp_from_request) <= 60:
                 # Valid request
                 return f(*args, **kwargs)
 
