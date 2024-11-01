@@ -121,9 +121,11 @@ def validate_request(f):
             request_body["timeTakenSeconds"] = float(time_taken_seconds) + 1
             return jsonify(request_body)
         except Exception as e:
+            print(e)
             print(
                 f"Suspicious Activity: IP {client_ip} detected possible request body manipulation. | "
-                f"Request body: {json.dumps(request_body)}."
+                f"Request body: {json.dumps(request_body)} | "
+                f"Decoded data: {data}."
             )
 
             request_body["timeTakenSeconds"] = float(time_taken_seconds) + 1
