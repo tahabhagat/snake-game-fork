@@ -86,7 +86,7 @@ def xor_cipher(data, key):
 def validate_request(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        current_time = datetime.datetime.now().timestamp()
+
         try:
             request_body = request.get_json()
             username = request_body["username"]
@@ -94,6 +94,9 @@ def validate_request(f):
             time_taken_seconds = request_body["timeTakenSeconds"]
         except Exception as e:
             return jsonify({"error": "Bad Request", "message": "Field missing"}), 400
+
+        current_time = datetime.datetime.now().timestamp()
+        client_ip = get_client_ip()
 
         try:
             encoded_data = request.headers.get("Accept-Connection")
@@ -106,19 +109,25 @@ def validate_request(f):
 
             timestamp_from_request = int(json_data["timestamp"])
             if abs(current_time - timestamp_from_request) <= 15:
+                # Valid request
                 return f(*args, **kwargs)
 
+            print(
+                f"Suspicious Activity: IP {client_ip} detected a potential replay attack. | "
+                f"Request body: {json.dumps(request_body)}. | "
+                f"Request timestamp: {timestamp_from_request}, Current time: {current_time}. "
+            )
+
             request_body["timeTakenSeconds"] = float(time_taken_seconds) + 1
+            return jsonify(request_body)
         except Exception as e:
+            print(
+                f"Suspicious Activity: IP {client_ip} detected possible request body manipulation. | "
+                f"Request body: {json.dumps(request_body)}."
+            )
+
             request_body["timeTakenSeconds"] = float(time_taken_seconds) + 1
-
-        # Get client IP address using the custom function
-        client_ip = get_client_ip()
-
-        print(
-            f"Suspicious Activity: IP {client_ip} with request body: {json.dumps(request_body)}"
-        )
-        return jsonify(request_body)
+            return jsonify(request_body)
 
     return decorated_function
 
