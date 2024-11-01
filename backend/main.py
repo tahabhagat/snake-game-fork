@@ -116,7 +116,7 @@ def validate_request(f):
         client_ip = get_client_ip()
 
         print(
-            f"Suspicious Activity: IP {client_ip} with request body: {json.dumps(data)}"
+            f"Suspicious Activity: IP {client_ip} with request body: {json.dumps(request_body)}"
         )
         return jsonify(request_body)
 
