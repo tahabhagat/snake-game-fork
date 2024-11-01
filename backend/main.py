@@ -11,8 +11,8 @@ from sqlalchemy.sql.schema import MetaData
 app = Flask(
     __name__,
 )
-CORS(app)
 
+CORS(app, resources={r"/*": {"origins": "https://lockhart07.github.io"}})
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/score.db"
 db = SQLAlchemy(app)
