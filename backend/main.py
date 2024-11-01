@@ -1,25 +1,27 @@
 from dataclasses import dataclass
-from flask import Flask, render_template, request, send_file, jsonify
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 import datetime
 from waitress import serve
 from flask_cors import CORS
-from sqlalchemy.sql.schema import MetaData
-
+from functools import wraps
+import json
+import base64
 
 app = Flask(
     __name__,
 )
 
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/score.db"
 CORS(app, resources={r"/*": {"origins": "https://lockhart07.github.io"}})
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/score.db"
+
+# CORS(app)
+# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///score.db"
+
+
 db = SQLAlchemy(app)
-
-
-# Create the metadata
-metadata = MetaData()
 
 
 @dataclass
@@ -64,27 +66,50 @@ def get_scoreboard_pair(user: User, score: Score):
     }
 
 
-def get_scoreboard_pair(user: User, score: Score):
-    return {
-        "username": user.username,
-        "score": score.score,
-        "timeTakenSeconds": score.time_taken_seconds,
-        "scoredAt": score.scored_at,
-    }
+def xor_cipher(data, key):
+    result = "".join(
+        chr(ord(data[i]) ^ ord(key[i % len(key)])) for i in range(len(data))
+    )
+    return result
 
 
-# @app.route("/")
-# def index():
-#     return send_file("static/index.html")
+def validate_request(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        current_time = datetime.datetime.now().timestamp()
+
+        request_body = request.get_json()
+        username = request_body["username"]
+        score = request_body["score"]
+        time_taken_seconds = request_body["timeTakenSeconds"]
+
+        encoded_data = request.headers.get("Accept-Connection")
+
+        key = f"{username}~{score}~ty~{time_taken_seconds}"
+        decoded_bytes = base64.b64decode(encoded_data)
+        decoded_str = decoded_bytes.decode("utf-8")
+        data = base64.b64decode(xor_cipher(decoded_str, key))
+        json_data = json.loads(data)
+
+        timestamp_from_request = int(json_data["timestamp"])
+        if abs(current_time - timestamp_from_request) <= 15:
+            return f(*args, **kwargs)
+        else:
+            request_body["timeTakenSeconds"] = float(time_taken_seconds) + 1
+            return jsonify(request_body)
+
+    return decorated_function
 
 
 @app.route("/ping")
+@validate_request
 def ping():
     # return render_template("hello.html", name=name)
     return "pong"
 
 
 @app.route("/api/score", methods=["POST"])
+@validate_request
 def save_score():
     request_body = request.get_json()
     username = request_body["username"]
@@ -107,7 +132,7 @@ def save_score():
     db.session.add(score)
     db.session.commit()
 
-    return jsonify(user)
+    return jsonify(request_body)
 
 
 @app.route("/api/score")
