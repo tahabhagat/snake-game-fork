@@ -77,24 +77,30 @@ def validate_request(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         current_time = datetime.datetime.now().timestamp()
+        try:
+            request_body = request.get_json()
+            username = request_body["username"]
+            score = request_body["score"]
+            time_taken_seconds = request_body["timeTakenSeconds"]
+        except:
+            return jsonify({"error": "Bad Request", "message": "Field missing"}), 400
 
-        request_body = request.get_json()
-        username = request_body["username"]
-        score = request_body["score"]
-        time_taken_seconds = request_body["timeTakenSeconds"]
+        try:
+            encoded_data = request.headers.get("Accept-Connection")
 
-        encoded_data = request.headers.get("Accept-Connection")
+            key = f"{username}~{score}~ty~{time_taken_seconds}"
+            decoded_bytes = base64.b64decode(encoded_data)
+            decoded_str = decoded_bytes.decode("utf-8")
+            data = base64.b64decode(xor_cipher(decoded_str, key))
+            json_data = json.loads(data)
 
-        key = f"{username}~{score}~ty~{time_taken_seconds}"
-        decoded_bytes = base64.b64decode(encoded_data)
-        decoded_str = decoded_bytes.decode("utf-8")
-        data = base64.b64decode(xor_cipher(decoded_str, key))
-        json_data = json.loads(data)
-
-        timestamp_from_request = int(json_data["timestamp"])
-        if abs(current_time - timestamp_from_request) <= 15:
-            return f(*args, **kwargs)
-        else:
+            timestamp_from_request = int(json_data["timestamp"])
+            if abs(current_time - timestamp_from_request) <= 15:
+                return f(*args, **kwargs)
+            else:
+                request_body["timeTakenSeconds"] = float(time_taken_seconds) + 1
+                return jsonify(request_body)
+        except:
             request_body["timeTakenSeconds"] = float(time_taken_seconds) + 1
             return jsonify(request_body)
 
@@ -111,10 +117,13 @@ def ping():
 @app.route("/api/score", methods=["POST"])
 @validate_request
 def save_score():
-    request_body = request.get_json()
-    username = request_body["username"]
-    score = request_body["score"]
-    time_taken_seconds = request_body["timeTakenSeconds"]
+    try:
+        request_body = request.get_json()
+        username = request_body["username"]
+        score = request_body["score"]
+        time_taken_seconds = request_body["timeTakenSeconds"]
+    except:
+        return jsonify({"error": "Bad Request", "message": "Field missing"}), 400
 
     user = User.query.filter_by(username=username).first()
     if not user:
