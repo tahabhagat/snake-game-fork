@@ -70,6 +70,7 @@ def get_client_ip():
     """Function to retrieve the client's IP address."""
     if "X-Forwarded-For" in request.headers:
         # If behind a proxy, use the first IP in the X-Forwarded-For list
+        print(request.headers["X-Forwarded-For"])
         return request.headers["X-Forwarded-For"].split(",")[0]
     else:
         # Direct access (not behind a proxy)
