@@ -98,38 +98,44 @@ def validate_request(f):
         current_time = datetime.datetime.now().timestamp()
         client_ip = get_client_ip()
 
-        try:
-            encoded_data = request.headers.get("Accept-Connection")
+        encoded_data = request.headers.get("Accept-Connection")
+        if not encoded_data:
+            print(
+                f"Suspicious Activity: IP {client_ip} detected possible attempt to direct access the API. | "
+                f"Request body: {json.dumps(request_body)} | "
+                f"No 'Accept-Connection' header."
+            )
+            request_body["timeTakenSeconds"] = float(time_taken_seconds) + 1
+            return jsonify(request_body)
 
+        try:
             key = f"{username}~{score}~ty~{time_taken_seconds}"
             decoded_bytes = base64.b64decode(encoded_data)
             decoded_str = decoded_bytes.decode("utf-8")
             data = base64.b64decode(xor_cipher(decoded_str, key))
             json_data = json.loads(data)
-
-            timestamp_from_request = int(json_data["timestamp"])
-            if abs(current_time - timestamp_from_request) <= 60:
-                # Valid request
-                return f(*args, **kwargs)
-
-            print(
-                f"Suspicious Activity: IP {client_ip} detected a potential replay attack. | "
-                f"Request body: {json.dumps(request_body)}. | "
-                f"Request timestamp: {timestamp_from_request}, Current time: {current_time}. "
-            )
-
-            request_body["timeTakenSeconds"] = float(time_taken_seconds) + 1
-            return jsonify(request_body)
         except Exception as e:
-            print(e)
             print(
                 f"Suspicious Activity: IP {client_ip} detected possible request body manipulation. | "
                 f"Request body: {json.dumps(request_body)} | "
-                f"Decoded data: {data}."
+                f"Encoded data: {encoded_data}."
             )
-
             request_body["timeTakenSeconds"] = float(time_taken_seconds) + 1
             return jsonify(request_body)
+
+        timestamp_from_request = int(json_data["timestamp"])
+        if abs(current_time - timestamp_from_request) <= 60:
+            # Valid request
+            return f(*args, **kwargs)
+
+        print(
+            f"Suspicious Activity: IP {client_ip} detected a potential replay attack. | "
+            f"Request body: {json.dumps(request_body)}. | "
+            f"Request timestamp: {timestamp_from_request}, Current time: {current_time}. "
+        )
+
+        request_body["timeTakenSeconds"] = float(time_taken_seconds) + 1
+        return jsonify(request_body)
 
     return decorated_function
 
