@@ -70,12 +70,13 @@ def get_client_ip():
     """Function to retrieve the client's IP address."""
     # Print all headers
     headers = request.headers
-    for header, value in headers.items():
-        print(f"{header}: {value}")
-    if "X-Forwarded-For" in request.headers:
+    # for header, value in headers.items():
+    #     print(f"{header}: {value}")
+    if "X-Forwarded-For" in headers:
         # If behind a proxy, use the first IP in the X-Forwarded-For list
-        print(request.headers["X-Forwarded-For"])
-        return request.headers["X-Forwarded-For"].split(",")[0]
+        return headers["X-Forwarded-For"].split(",")[0]
+    elif "X-Real-Ip" in headers:
+        return headers["X-Real-Ip"]
     else:
         # Direct access (not behind a proxy)
         return request.remote_addr
