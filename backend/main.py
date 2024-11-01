@@ -66,6 +66,16 @@ def get_scoreboard_pair(user: User, score: Score):
     }
 
 
+def get_client_ip():
+    """Function to retrieve the client's IP address."""
+    if "X-Forwarded-For" in request.headers:
+        # If behind a proxy, use the first IP in the X-Forwarded-For list
+        return request.headers["X-Forwarded-For"].split(",")[0]
+    else:
+        # Direct access (not behind a proxy)
+        return request.remote_addr
+
+
 def xor_cipher(data, key):
     result = "".join(
         chr(ord(data[i]) ^ ord(key[i % len(key)])) for i in range(len(data))
@@ -82,7 +92,7 @@ def validate_request(f):
             username = request_body["username"]
             score = request_body["score"]
             time_taken_seconds = request_body["timeTakenSeconds"]
-        except:
+        except Exception as e:
             return jsonify({"error": "Bad Request", "message": "Field missing"}), 400
 
         try:
@@ -97,12 +107,18 @@ def validate_request(f):
             timestamp_from_request = int(json_data["timestamp"])
             if abs(current_time - timestamp_from_request) <= 15:
                 return f(*args, **kwargs)
-            else:
-                request_body["timeTakenSeconds"] = float(time_taken_seconds) + 1
-                return jsonify(request_body)
-        except:
+
             request_body["timeTakenSeconds"] = float(time_taken_seconds) + 1
-            return jsonify(request_body)
+        except Exception as e:
+            request_body["timeTakenSeconds"] = float(time_taken_seconds) + 1
+
+        # Get client IP address using the custom function
+        client_ip = get_client_ip()
+
+        print(
+            f"Suspicious Activity: IP {client_ip} with request body: {json.dumps(data)}"
+        )
+        return jsonify(request_body)
 
     return decorated_function
 
@@ -122,7 +138,7 @@ def save_score():
         username = request_body["username"]
         score = request_body["score"]
         time_taken_seconds = request_body["timeTakenSeconds"]
-    except:
+    except Exception as e:
         return jsonify({"error": "Bad Request", "message": "Field missing"}), 400
 
     user = User.query.filter_by(username=username).first()
