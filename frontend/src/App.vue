@@ -325,7 +325,6 @@ let excessTime = 0; // Track excess time separately
 
 // Main game loop
 function loop() {
-  if (game_paused) return; // Stop the loop if the game is paused
 
   requestAnimationFrame(loop); // Request the next frame
 
@@ -353,6 +352,7 @@ function loop() {
 
 // Function to update the game state
 function updateGameState() {
+  if (game_paused) return; // Stop the loop if the game is paused
   frameCount++;
   if (frameCount < slowFactor) return; // Skip frames to slow down the game
   frameCount = 0;
