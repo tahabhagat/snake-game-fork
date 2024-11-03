@@ -115,6 +115,26 @@ window.addEventListener('updateHighscores', async (event) => {
   topScores.value = await ScoreService.getScores();
 });
 
+
+// Function to create a new apple at a random position not occupied by the snake
+function createApple() {
+  let newApplePosition;
+
+  do {
+    newApplePosition = {
+      x: getRandomInt(0, 25) * grid,
+      y: getRandomInt(0, 25) * grid
+    };
+  } while (isAppleOnSnake(newApplePosition)); // Ensure the apple is not on the snake
+
+  return new Apple(newApplePosition.x, newApplePosition.y); // Return the new apple object
+}
+
+// Function to check if the apple's position overlaps with the snake's body
+function isAppleOnSnake(position) {
+  return snake.cells.some(cell => cell.x === position.x && cell.y === position.y);
+}
+
 async function setupScores() {
   personalBest.value = localStorage.getItem("personal_best") ?? 0;
 
@@ -154,7 +174,7 @@ onMounted(async () => {
 
 
   snake = new Snake(160, 160, grid);
-  apple = new Apple(320, 320);
+  apple = createApple();
 });
 
 
@@ -327,8 +347,8 @@ function loop() {
     excessTime -= msPerFrame;
   }
 
-  // Render the frame (this should be called only once per animation frame)
-  renderFrame();
+  // // Render the frame (this should be called only once per animation frame)
+  // renderFrame();
 }
 
 // Function to update the game state
@@ -392,7 +412,7 @@ function updateGameState() {
   // Handle eating apple
   if (snake.x === apple.x && snake.y === apple.y) {
     snake.increase_length();
-    apple = new Apple(getRandomInt(0, 25) * grid, getRandomInt(0, 25) * grid);
+    apple = createApple();
 
     if (currentScore.value > personalBest.value) {
       personalBest.value = currentScore.value;
@@ -409,7 +429,7 @@ function updateGameState() {
       window.dispatchEvent(updateHighscoresEvent);
 
       snake = new Snake(160, 160, grid);
-      apple = new Apple(getRandomInt(0, 25) * grid, getRandomInt(0, 25) * grid);
+      apple = createApple();
       break;
     }
   }
