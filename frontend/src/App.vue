@@ -3,6 +3,10 @@
 
   <div class="parent">
     <div class="left-side-container child">
+      <div class="username-container" style="width: inherit;">
+        <img src="/user.svg" class="user-icon" width="25px">
+        <div class="username-text">{{ username }}</div>
+      </div>
       <div class="score-container" style="height: 200px; ">
         <div class="score" id="current-score">
           <Score title="Score" :score=currentScore></Score>
@@ -639,7 +643,7 @@ canvas {
 
 .score-container {
   /* border: green 1 px solid; */
-  margin-bottom: 100px;
+  margin-bottom: 80px;
 
 }
 
@@ -660,6 +664,39 @@ canvas {
   width: 450px;
 }
 
+
+.username-container {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #185727;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: fit-content;
+  max-width: inherit;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 50px;
+
+}
+
+
+
+.user-icon {
+  font-size: 1.5em;
+  margin-right: 10px;
+  color: #ccc;
+}
+
+.username-text {
+  font-size: 1em;
+  color: #ccc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'Roboto', sans-serif;
+  /* or replace with your choice */
+  font-size: 1.5em;
+}
 
 
 #leaderboard {
@@ -727,6 +764,8 @@ canvas {
 .champion {
   color: #ffcb74;
 }
+
+
 
 /* 
 TODO:
