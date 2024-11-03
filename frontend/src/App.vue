@@ -124,18 +124,19 @@ async function setupScores() {
   }, 5000);
 }
 
-function calculateScore(length) {
-  return (length - SNAKE_INITIAL_LENGTH) * 1;
-}
-
-// let currentScore = ref(0);
 
 let context;
 let canvas;
+// Cache canvas width and height
+let canvasWidth = 0;
+let canvasHeight = 0;
 
 function initialize_canvas() {
   canvas = document.getElementById("game");
   context = canvas.getContext("2d");
+
+  canvasHeight = canvas.height;
+  canvasWidth = canvas.width;
 }
 
 let snake;
@@ -195,9 +196,13 @@ class Snake {
     this.dxToApply = grid;
     this.dyToApply = 0;
     this.cells = [];
+    // Set up a tracker for snake positions (for collision)
+    this.snakePositionSet = new Set();
+
     this.maxCells = SNAKE_INITIAL_LENGTH;
     this.autoplay = false;
     this.birthDatetime = new Date()
+
   }
 
   queue_turn_left() {
@@ -295,219 +300,119 @@ const fps = 60;
 const slowFPS = 15; // Desired FPS when slowing down
 const slowFactor = fps / slowFPS; // Factor to throttle to 15 FPS
 const msPerFrame = 1000 / fps;
+let excessTime = 0; // Track excess time separately
+
 
 // Main game loop
 function loop() {
   if (game_paused) return; // Stop the loop if the game is paused
 
-  requestAnimationFrame(loop);
+  requestAnimationFrame(loop); // Request the next frame
 
   const msNow = window.performance.now();
   const msPassed = msNow - msPrev;
 
+  // Update the previous timestamp
+  msPrev = msNow;
+
+  // Accumulate excess time
+  excessTime += msPassed;
+
   // Skip frames if not enough time has passed
-  if (msPassed < msPerFrame) return;
+  while (excessTime >= msPerFrame) {
+    // Update game state
+    updateGameState();
 
-  // Calculate excess time that has accumulated
-  const excessTime = msPassed % msPerFrame;
-  msPrev = msNow - excessTime; // Update msPrev to account for any leftover time
+    // Reduce excess time by the time spent on one frame
+    excessTime -= msPerFrame;
+  }
 
-  // Slow down the loop to 15 FPS (by skipping frames)
-  if (++frameCount < slowFactor) return;
+  // Render the frame (this should be called only once per animation frame)
+  renderFrame();
+}
+
+// Function to update the game state
+function updateGameState() {
+  frameCount++;
+  if (frameCount < slowFactor) return; // Skip frames to slow down the game
   frameCount = 0;
 
   if (snake.autoplay) {
     snake.doOptimalMove(snake.x, snake.y);
   }
   snake.flush_queued_move();
+  context.clearRect(0, 0, canvasWidth, canvasHeight);
 
-  context.clearRect(0, 0, canvas.width, canvas.height);
-
-  // move snake by it's velocity
+  // Move snake by velocity and handle wrapping
   snake.move();
+  snake.x = (snake.x + canvasWidth) % canvasWidth;
+  snake.y = (snake.y + canvasHeight) % canvasHeight;
 
-  // wrap snake position horizontally on edge of screen
-  if (snake.x < 0) {
-    snake.x = canvas.width - grid;
-  } else if (snake.x >= canvas.width) {
-    snake.x = 0;
-  }
-
-  // wrap snake position vertically on edge of screen
-  if (snake.y < 0) {
-    snake.y = canvas.height - grid;
-  } else if (snake.y >= canvas.height) {
-    snake.y = 0;
-  }
-
-  // keep track of where snake has been. front of the array is always the head
+  // Track snake position using a Set for faster collision checking
+  const headPosition = `${snake.x},${snake.y}`;
   snake.cells.unshift({ x: snake.x, y: snake.y });
+  snake.snakePositionSet.add(headPosition);
 
-  //   remove cells as we move away from them
   if (snake.cells.length > snake.maxCells) {
-    snake.cells.pop();
+    const tail = snake.cells.pop();
+    snake.snakePositionSet.delete(`${tail.x},${tail.y}`);
   }
 
-  // context.fillStyle = "lightgreen";
-  // for (let i = 0; i < 25; i++) {
-  //   for (let j = 0; j < 25; j++) {
-  //     // context.fillRect(i * grid, j * grid, grid - 2, grid - 2);
-  //     context.rect(i * grid, j * grid, grid - 1, grid - 1);
-
-  //   }
-  // }
-
-  // DEBUG: CELL ID
-  // context.fillStyle = "red";
-  // for (let i = 0; i < 25; i++) {
-  //   for (let j = 0; j < 25; j++) {
-  //     // context.fillStyle = "lightgreen";
-  //     // context.fillRect(i * grid, j * grid, grid - 2, grid - 2);
-  //     // context.rect(i * grid, j * grid, grid - 1, grid - 1);
-
-  //     context.font = `8px arial`;
-  //     context.fillText(`${i}:${j}`, i * grid + 2, j * grid + 11.5);
-  //   }
-  // }
-  // context.fill();
-
-  // draw apple
+  // Draw the apple
   context.fillStyle = "#ffcb74";
   context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
-
-  // console.log("width", canvas.width);
   context.fillStyle = "#373636";
-  // context.fillStyle = "red";
   context.font = `${grid * 0.5}px arial`;
-  // context.fillRect(apple.x, apple.y, 3, 3);
   context.fillText("404", apple.x, apple.y + grid / 1.5);
 
-  // draw snake one cell at a time
-  context.fillStyle = "#185727";
-  snake.cells.forEach(function (cell, index) {
-    // drawing 1 px smaller than the grid creates a grid effect in the snake body so you can see how long it is
 
-    //   if (index == 0) {
-    //     context.fillStyle = "red";
-    //     context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
-    //   } else {
-    //     context.fillStyle = "#185727";
-    //     context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
-    //   }
-    context.fillStyle = snake.calculateGradient(
-      index,
-      SNAKE_BODY_GRADIENT.end,
-      SNAKE_BODY_GRADIENT.start
-    );
+  // Draw snake with gradient and eyes
+  context.beginPath();
+  snake.cells.forEach((cell, index) => {
+    context.fillStyle = snake.calculateGradient(index, SNAKE_BODY_GRADIENT.end, SNAKE_BODY_GRADIENT.start);
     context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
 
-    // Draw eyes
+    // Draw eyes if head
     if (index === 0) {
-      // context.fillStyle = "red";
-      // context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
-
-      // Draw the white dots for the eyes
       context.fillStyle = "white";
-
-      // console.log(snake);
-      const eyeRadius = 2;
-
-      // left
-      if (snake.dx === 20) {
-        context.beginPath();
-        context.arc(cell.x + 15, cell.y + 6, eyeRadius, 0, 2 * Math.PI);
-        context.fill();
-
-        context.beginPath();
-        context.arc(cell.x + 15, cell.y + 14, eyeRadius, 0, 2 * Math.PI);
-        context.fill();
-      }
-
-      //Right
-      else if (snake.dx === -20) {
-        context.beginPath();
-        context.arc(cell.x + 5, cell.y + 6, eyeRadius, 0, 2 * Math.PI);
-        context.fill();
-
-        context.beginPath();
-        context.arc(cell.x + 5, cell.y + 14, eyeRadius, 0, 2 * Math.PI);
-        context.fill();
-      }
-
-      // down
-      else if (snake.dy === 20) {
-        context.beginPath();
-        context.arc(cell.x + 6, cell.y + 15, eyeRadius, 0, 2 * Math.PI);
-        context.fill();
-
-        context.beginPath();
-        context.arc(cell.x + 14, cell.y + 15, eyeRadius, 0, 2 * Math.PI);
-        context.fill();
-      }
-
-      // up
-      else if (snake.dy === -20) {
-        context.beginPath();
-        context.arc(cell.x + 6, cell.y + 5, eyeRadius, 0, 2 * Math.PI);
-        context.fill();
-
-        context.beginPath();
-        context.arc(cell.x + 14, cell.y + 5, eyeRadius, 0, 2 * Math.PI);
-        context.fill();
-      }
-    }
-
-    // snake ate apple
-    if (cell.x === apple.x && cell.y === apple.y) {
-      // snake.maxCells++;
-      // SNAKE_EAT_SOUND.play();
-      snake.increase_length();
-
-      // canvas is 400x400 which is 25x25 grids
-      // apple.x = getRandomInt(0, 25) * grid;
-      // apple.y = getRandomInt(0, 25) * grid;
-      apple = new Apple(getRandomInt(0, 25) * grid, getRandomInt(0, 25) * grid);
-
-      // console.log("eaating apple", snake.score, "  ", highscore);
-
-      if (currentScore.value > personalBest.value) {
-        personalBest.value = currentScore.value;
-        localStorage.setItem("personal_best", personalBest.value);
-      }
-    }
-
-    // check collision with all cells after this one (modified bubble sort)
-    for (var i = index + 1; i < snake.cells.length; i++) {
-      // snake occupies same space as a body part. reset game
-      // Death
-      if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
-        let timeTakenSeconds = (new Date().getTime() - snake.birthDatetime.getTime()) / 1000;
-        ScoreService.saveScore(username, currentScore.value, timeTakenSeconds);
-        currentScore.value = 0;
-        window.dispatchEvent(updateHighscoresEvent);
-
-        snake = new Snake(160, 160, grid);
-
-        apple.x = getRandomInt(0, 25) * grid;
-        apple.y = getRandomInt(0, 25) * grid;
-      }
+      const eyeOffsets = {
+        "20,0": [[15, 6], [15, 14]], // Right
+        "-20,0": [[5, 6], [5, 14]],  // Left
+        "0,20": [[6, 15], [14, 15]], // Down
+        "0,-20": [[6, 5], [14, 5]]   // Up
+      };
+      const [eye1, eye2] = eyeOffsets[`${snake.dx},${snake.dy}`] || [];
+      context.beginPath();
+      context.arc(cell.x + eye1[0], cell.y + eye1[1], 2, 0, 2 * Math.PI);
+      context.arc(cell.x + eye2[0], cell.y + eye2[1], 2, 0, 2 * Math.PI);
+      context.fill();
     }
   });
 
-  // Draw score
-  context.font = "50px serif";
-  context.fillStyle = "#ffcb74";
-  // context.fillText(1000 / msPerFrame, 400, 40);
+  // Handle eating apple
+  if (snake.x === apple.x && snake.y === apple.y) {
+    snake.increase_length();
+    apple = new Apple(getRandomInt(0, 25) * grid, getRandomInt(0, 25) * grid);
 
-  // // Draw highscore
-  // context.font = "50px serif";
-  // context.fillStyle = "#ffcb74";
-  // // context.fillText(
-  // //   personal_best_score ? personal_best_score : 0,
-  // //   450,
-  // //   40
-  // // );
-  // context.fillText(personalBest.value, 450, 40);
+    if (currentScore.value > personalBest.value) {
+      personalBest.value = currentScore.value;
+      localStorage.setItem("personal_best", personalBest.value);
+    }
+  }
+
+  // Check for collisions with self
+  for (let i = 1; i < snake.cells.length; i++) {
+    if (`${snake.cells[i].x},${snake.cells[i].y}` === headPosition) {
+      const timeTakenSeconds = (new Date().getTime() - snake.birthDatetime.getTime()) / 1000;
+      ScoreService.saveScore(username, currentScore.value, timeTakenSeconds);
+      currentScore.value = 0;
+      window.dispatchEvent(updateHighscoresEvent);
+
+      snake = new Snake(160, 160, grid);
+      apple = new Apple(getRandomInt(0, 25) * grid, getRandomInt(0, 25) * grid);
+      break;
+    }
+  }
 }
 
 const alertText = ref("")
