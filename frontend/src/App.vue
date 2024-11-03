@@ -289,30 +289,31 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
-var frameCount = 0;
+let frameCount = 0;
+let msPrev = window.performance.now();
+const fps = 60;
+const slowFPS = 15; // Desired FPS when slowing down
+const slowFactor = fps / slowFPS; // Factor to throttle to 15 FPS
+const msPerFrame = 1000 / fps;
 
-let msPrev = window.performance.now()
-const fps = 60
-const msPerFrame = 1000 / fps
-// game loop
+// Main game loop
 function loop() {
-  if (game_paused) {
-    return
-  }
+  if (game_paused) return; // Stop the loop if the game is paused
+
   requestAnimationFrame(loop);
-  const msNow = window.performance.now()
-  const msPassed = msNow - msPrev
 
-  if (msPassed < msPerFrame) return
-  const excessTime = msPassed % msPerFrame
-  msPrev = msNow - excessTime
+  const msNow = window.performance.now();
+  const msPassed = msNow - msPrev;
 
-  // console.log("dfsfs", localStorage.getItem("lastname"));
+  // Skip frames if not enough time has passed
+  if (msPassed < msPerFrame) return;
 
-  // slow game loop to 15 fps instead of 60 (60/15 = 4)
-  if (++frameCount < 4) {
-    return;
-  }
+  // Calculate excess time that has accumulated
+  const excessTime = msPassed % msPerFrame;
+  msPrev = msNow - excessTime; // Update msPrev to account for any leftover time
+
+  // Slow down the loop to 15 FPS (by skipping frames)
+  if (++frameCount < slowFactor) return;
   frameCount = 0;
 
   if (snake.autoplay) {
