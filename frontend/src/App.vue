@@ -172,6 +172,7 @@ onMounted(async () => {
   // start the game
   requestAnimationFrame(loop);
 
+  pauses = []
 
   snake = new Snake(160, 160, grid);
   apple = createApple();
@@ -196,12 +197,20 @@ if (username === "" || username === null) {
   console.log("Username: " + username);
   localStorage.setItem("username", username);
 }
+
+let pauses;
+let currentPauseStart;
 function pause_game() {
+  if (game_paused) return
   game_paused = true;
+  currentPauseStart = new Date()
 }
 
 function unpause_game() {
+  if (!game_paused) return
   game_paused = false;
+  pauses.push(new Date().getTime() - currentPauseStart.getTime())
+  currentPauseStart = null;
   requestAnimationFrame(loop);
 }
 
@@ -423,7 +432,13 @@ function updateGameState() {
   // Check for collisions with self
   for (let i = 1; i < snake.cells.length; i++) {
     if (`${snake.cells[i].x},${snake.cells[i].y}` === headPosition) {
-      const timeTakenSeconds = (new Date().getTime() - snake.birthDatetime.getTime()) / 1000;
+      // const timeTakenSeconds = (new Date().getTime() - snake.birthDatetime.getTime()) / 1000;
+
+      const timeTaken = (new Date().getTime() - snake.birthDatetime.getTime());
+      pauses.forEach((currentValue) => {
+        timeTaken = timeTaken - currentValue;
+      });
+      const timeTakenSeconds = timeTaken / 1000;
       ScoreService.saveScore(username, currentScore.value, timeTakenSeconds);
       currentScore.value = 0;
       window.dispatchEvent(updateHighscoresEvent);
@@ -456,15 +471,13 @@ let autoplayCheatPointer = 0
 // listen to keyboard events to move the snake
 document.addEventListener("keydown", function (e) {
 
-  if (game_paused) {
-    console.log("unpausing");
-    unpause_game();
-  }
 
-  // p key
-  else if (e.key === "Escape") {
-    console.log("pause called", game_paused);
-    pause_game();
+
+  if (e.key === "Escape") {
+    if (game_paused) {
+      unpause_game();
+    } else { pause_game(); }
+
   }
 
   if (e.key === autoplayCheat[autoplayCheatPointer]) {
