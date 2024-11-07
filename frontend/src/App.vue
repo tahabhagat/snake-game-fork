@@ -434,11 +434,12 @@ function updateGameState() {
     if (`${snake.cells[i].x},${snake.cells[i].y}` === headPosition) {
       // const timeTakenSeconds = (new Date().getTime() - snake.birthDatetime.getTime()) / 1000;
 
-      const timeTaken = (new Date().getTime() - snake.birthDatetime.getTime());
+      let timeTaken = (new Date().getTime() - snake.birthDatetime.getTime());
       pauses.forEach((currentValue) => {
         timeTaken = timeTaken - currentValue;
       });
       const timeTakenSeconds = timeTaken / 1000;
+      console.log(timeTakenSeconds)
       ScoreService.saveScore(username, currentScore.value, timeTakenSeconds);
       currentScore.value = 0;
       window.dispatchEvent(updateHighscoresEvent);
