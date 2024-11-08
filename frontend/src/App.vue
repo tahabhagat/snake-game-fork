@@ -734,15 +734,4 @@ canvas {
 .champion {
   color: #ffcb74;
 }
-
-
-
-/* 
-TODO:
-1. Fix score  
-2. Favicon ------------------ Done
-3. Instructions
-4. Cheats - properly -------------Done
-5. Cheat notification
-*/
 </style>
