@@ -139,9 +139,9 @@ async function setupScores() {
   personalBest.value = localStorage.getItem("personal_best") ?? 0;
 
   window.dispatchEvent(updateHighscoresEvent);
-  setInterval(async () => {
-    window.dispatchEvent(updateHighscoresEvent);
-  }, 5000);
+  // setInterval(async () => {
+  //   window.dispatchEvent(updateHighscoresEvent);
+  // }, 5000);
 }
 
 
@@ -361,7 +361,28 @@ function loop() {
 
 // Function to update the game state
 function updateGameState() {
-  if (game_paused) return; // Stop the loop if the game is paused
+  if (game_paused) {
+    // context.fillStyle = "#ffcb74";
+    // context.fillRect(20, 200, (25 * grid) * 0.6, grid * 5);
+
+    // context.fillStyle = "#ffcb74";
+    // context.font = `${grid * 4}px impact`;
+    // context.fillText("PAUSED", (grid * 25) * 0.25, (grid * 25) * 0.55);
+
+    context.fillStyle = "#ffcb74";
+    context.strokeStyle = "#373636";
+    context.lineWidth = 1; // Outline thickness (adjust to your liking)
+    context.font = `${grid * 4}px impact`;
+    context.strokeText("PAUSED", (grid * 25) * 0.25, (grid * 25) * 0.55);
+    context.fillText("PAUSED", (grid * 25) * 0.25, (grid * 25) * 0.55);
+
+
+    // context.fillStyle = "red";
+    // context.fillRect(20, 200, 5, 5);
+
+
+    return
+  }; // Stop the loop if the game is paused
   frameCount++;
   if (frameCount < slowFactor) return; // Skip frames to slow down the game
   frameCount = 0;
@@ -519,6 +540,15 @@ document.addEventListener("keydown", function (e) {
   //   console.log("Cheating: autoplay toggled");
   // }
 });
+
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState === 'hidden') {
+    // User has switched tabs or alt-tabbed away
+    pause_game()
+  }
+});
+
+
 </script>
 
 <style>
