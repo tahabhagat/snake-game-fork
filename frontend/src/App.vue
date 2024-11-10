@@ -124,7 +124,7 @@ function isAppleOnSnake(position) {
 }
 
 // If SSE fails the first time, use normal api
-let shouldQueryNormalApiCounter = 0
+let shouldQueryNormalApiCounter = 5
 
 function createScoresEventSource() {
   console.log("Creating eventsource for leaderboard")
