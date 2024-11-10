@@ -15,12 +15,12 @@ import global_variables
 
 app = Flask(__name__)
 
-app.config["SQLALCHEMY_DATABASE_URI"] = global_variables.SQLALCHEMY_DATABASE_URI
-CORS(app, resources={r"/*": {"origins": global_variables.CORS_URL}})
+# app.config["SQLALCHEMY_DATABASE_URI"] = global_variables.SQLALCHEMY_DATABASE_URI
+# CORS(app, resources={r"/*": {"origins": global_variables.CORS_URL}})
 
 
-# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///score.db"
-# CORS(app)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///score.db"
+CORS(app)
 
 
 db = SQLAlchemy(app)
@@ -167,7 +167,7 @@ def ping():
 
 # @app.route("/snake-game/api/score", methods=["POST"])
 @normal_api_bp.route("/score", methods=["POST"])
-# @validate_request
+@validate_request
 def save_score():
     try:
         request_body = request.get_json()
@@ -270,7 +270,6 @@ def get_top_scoreboard():
     )
 
 
-# @app.route("/snake-game/api/stream/top-score")\
 @sse_api_bp.route("/top-score")
 def stream_scores():
     page = int(request.args.get("page", 1))
@@ -278,16 +277,17 @@ def stream_scores():
     username = request.args.get("username", None)
 
     def event_stream():
+        last_data = None  # Track the last sent data
         while True:
             with app.app_context():
-                data = {
-                    "data": get_top_scoreboard_service(
-                        page=page, per_page=per_page, username=username
-                    )
-                }
-                yield f"data: {json.dumps(data)}\n\n"
+                current_data = get_top_scoreboard_service(
+                    page=page, per_page=per_page, username=username
+                )
+                if current_data != last_data:  # Send only if there's new data
+                    last_data = current_data
+                    yield f"data: {json.dumps({'data': current_data})}\n\n"
 
-            # Wait for either 5 seconds or a new score update
+            # Wait for either 5 seconds or new score update
             time.sleep(global_variables.GET_SCORES_POLLING_RATE_SECONDS)
 
     return Response(event_stream(), mimetype="text/event-stream")
