@@ -271,19 +271,25 @@ def stream_scores():
     username = request.args.get("username", None)
 
     def event_stream():
+        last_data = None
         while True:
             with app.app_context():
-                data = {
-                    "data": get_top_scoreboard_service(
-                        page=page, per_page=per_page, username=username
-                    ),
-                    "timestamp": str(
-                        datetime.datetime.now(
-                            datetime.timezone(datetime.timedelta(hours=5, minutes=30))
-                        )
-                    ),
-                }
-                yield f"data: {json.dumps(data)}\n\n"
+                current_data = get_top_scoreboard_service(
+                    page=page, per_page=per_page, username=username
+                )
+                if current_data != last_data:
+                    data = {
+                        "data": current_data,
+                        "timestamp": str(
+                            datetime.datetime.now(
+                                datetime.timezone(
+                                    datetime.timedelta(hours=5, minutes=30)
+                                )
+                            )
+                        ),
+                    }
+                    last_data = current_data
+                    yield f"data: {json.dumps(data)}\n\n"
 
             # Wait for either 5 seconds or a new score update
             time.sleep(global_variables.GET_SCORES_POLLING_RATE_SECONDS)
