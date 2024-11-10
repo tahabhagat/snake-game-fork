@@ -249,6 +249,49 @@ def get_scoreboard():
     )
 
 
+@normal_api_bp.route("/personal-best")
+def get_user_top_score():
+
+    username = request.args.get("username", None)
+
+    query = (
+        db.session.query(
+            User,
+            Score.score.label("max_score"),
+            Score.scored_at,
+            Score.time_taken_seconds,
+        )
+        .join(Score, User.user_id == Score.user_id)
+        .filter(User.username == username)  # Filter by the user's name
+        .order_by(Score.score.desc(), Score.time_taken_seconds.asc())
+        .limit(1)  # Limit to just the top score
+    )
+
+    result = query.all()
+
+    if result:
+        user, score, scored_at, time_taken_seconds = result[0]
+    else:
+        user = User(username=username)
+        score = 0
+        scored_at = None
+        time_taken_seconds = None
+
+    data = get_scoreboard_pair(
+        user=user,
+        score=Score(
+            scored_at=scored_at,
+            score=score,
+            time_taken_seconds=time_taken_seconds,
+        ),
+    )
+    return jsonify(
+        {
+            "data": data,
+        }
+    )
+
+
 @normal_api_bp.route("/top-score")
 def get_top_scoreboard():
     page = int(request.args.get("page", 1))
@@ -307,4 +350,4 @@ if __name__ == "__main__":
     host = "0.0.0.0"
     port = 8000
     print(f"STARTING WEBSERVER ON {host}:{port}")
-    serve(app=app, host=host, port=port, threads=50)
+    serve(app=app, host=host, port=port, threads=100)

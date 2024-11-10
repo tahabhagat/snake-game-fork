@@ -8,10 +8,25 @@ import { api, API_BASE_URL } from "../boot/axios";
 
 export default {
 
-    async getScores() {
+    async getPersonalBest(username) {
+        const params = {
+            username: username
+        };
+
+        return api.get("/api/personal-best", { params })
+            .then(response => {
+                return response.data.data.score;
+            })
+            .catch(error => {
+                return 0
+            });
+    },
+
+    async getScores(username) {
         const params = {
             page: 1,
             per_page: 10,
+            username: username
         };
 
         try {

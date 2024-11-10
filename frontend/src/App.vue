@@ -156,7 +156,7 @@ function createScoresEventSource() {
 }
 
 async function setupScores() {
-  personalBest.value = localStorage.getItem("personal_best") ?? 0;
+  personalBest.value = await ScoreService.getPersonalBest(username);
 }
 createScoresEventSource();
 
@@ -204,8 +204,6 @@ const SNAKE_INITIAL_LENGTH = 4;
 // the canvas width & height, snake x & y, and the apple x & y, all need to be a multiples of the grid size in order for collision detection to work
 // (e.g. 16 * 25 = 400)
 var grid = 20;
-
-// var personal_best_score = ref(0);
 
 var username = localStorage.getItem("username");
 if (username === "" || username === null) {
@@ -462,7 +460,6 @@ function updateGameState() {
 
     if (currentScore.value > personalBest.value) {
       personalBest.value = currentScore.value;
-      localStorage.setItem("personal_best", personalBest.value);
     }
   }
 

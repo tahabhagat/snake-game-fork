@@ -12,7 +12,7 @@ let protocol = window.location.protocol;
 let port = window.location.port;
 
 const API_BASE_URL = "https://lockhart.in/snake-game/";
-// const API_BASE_URL = "http://localhost:8000/api"
+// const API_BASE_URL = "http://localhost:8000/snake-game/"
 
 const api = axios.create({
 
