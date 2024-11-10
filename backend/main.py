@@ -280,7 +280,12 @@ def stream_scores():
     def event_stream():
         while True:
             with app.app_context():
-                yield f"data: {json.dumps({ "data": get_top_scoreboard_service( page=page, per_page=per_page, username=username ) })}\n\n"
+                data = {
+                    "data": get_top_scoreboard_service(
+                        page=page, per_page=per_page, username=username
+                    )
+                }
+                yield f"data: {json.dumps(data)}\n\n"
 
             # Wait for either 5 seconds or a new score update
             time.sleep(global_variables.GET_SCORES_POLLING_RATE_SECONDS)
