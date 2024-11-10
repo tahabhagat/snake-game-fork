@@ -15,12 +15,12 @@ import global_variables
 
 app = Flask(__name__)
 
-app.config["SQLALCHEMY_DATABASE_URI"] = global_variables.SQLALCHEMY_DATABASE_URI
-CORS(app, resources={r"/*": {"origins": global_variables.CORS_URL}})
+# app.config["SQLALCHEMY_DATABASE_URI"] = global_variables.SQLALCHEMY_DATABASE_URI
+# CORS(app, resources={r"/*": {"origins": global_variables.CORS_URL}})
 
 
-# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///score.db"
-# CORS(app)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///score.db"
+CORS(app)
 
 
 db = SQLAlchemy(app)
