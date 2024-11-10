@@ -123,6 +123,8 @@ function isAppleOnSnake(position) {
   return snake.cells.some(cell => cell.x === position.x && cell.y === position.y);
 }
 
+// If SSE fails the first time, use normal api
+let shouldQueryNormalApiCounter = 0
 
 function createScoresEventSource() {
   console.log("Creating eventsource for leaderboard")
@@ -138,6 +140,11 @@ function createScoresEventSource() {
     console.error("EventSource connection lost, attempting to reconnect...");
     eventSource.close();  // Close the current connection
 
+    // After 5 SSE fails, fallback to normal api call
+    if (shouldQueryNormalApiCounter >= 5) {
+      topScores.value = ScoreService.getScores()
+      shouldQueryNormalApiCounter = 0
+    }
     // Attempt to reconnect after a delay
     setTimeout(() => {
       console.log("Reconnecting to EventSource...");
