@@ -148,10 +148,8 @@ function createScoresEventSource() {
 
 async function setupScores() {
   personalBest.value = localStorage.getItem("personal_best") ?? 0;
-
-  let scoresEvent = createScoresEventSource();
 }
-
+createScoresEventSource();
 
 
 let context;
