@@ -130,7 +130,6 @@ function createScoresEventSource() {
   const eventSource = ScoreService.streamHighScores()
 
   eventSource.onmessage = function (event) {
-    console.log("message aya \n", new Date(), "\n", JSON.parse(event.data).time)
     topScores.value = JSON.parse(event.data).data;
   };
 

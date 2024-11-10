@@ -284,7 +284,7 @@ def stream_scores():
                     "data": get_top_scoreboard_service(
                         page=page, per_page=per_page, username=username
                     ),
-                    "time": str(
+                    "timestamp": str(
                         datetime.datetime.now(
                             datetime.timezone(datetime.timedelta(hours=5, minutes=30))
                         )
