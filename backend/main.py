@@ -350,4 +350,4 @@ if __name__ == "__main__":
     host = "0.0.0.0"
     port = 8000
     print(f"STARTING WEBSERVER ON {host}:{port}")
-    serve(app=app, host=host, port=port, threads=100)
+    serve(app=app, host=host, port=port, threads=25, connection_limit=500)
