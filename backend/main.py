@@ -157,17 +157,13 @@ def validate_request(f):
     return decorated_function
 
 
-# @app.route("/snake-game/api/ping")
 @normal_api_bp.route("/ping")
-@validate_request
 def ping():
-    # return render_template("hello.html", name=name)
     return "pong"
 
 
-# @app.route("/snake-game/api/score", methods=["POST"])
 @normal_api_bp.route("/score", methods=["POST"])
-# @validate_request
+@validate_request
 def save_score():
     try:
         request_body = request.get_json()
@@ -229,7 +225,6 @@ def get_top_scoreboard_service(page, per_page, username):
     ]
 
 
-# @app.route("/snake-game/api/score")
 @normal_api_bp.route("/score")
 def get_scoreboard():
 
@@ -254,7 +249,6 @@ def get_scoreboard():
     )
 
 
-# @app.route("/snake-game/api/top-score")
 @normal_api_bp.route("/top-score")
 def get_top_scoreboard():
     page = int(request.args.get("page", 1))
@@ -270,7 +264,6 @@ def get_top_scoreboard():
     )
 
 
-# @app.route("/snake-game/api/stream/top-score")\
 @sse_api_bp.route("/top-score")
 def stream_scores():
     page = int(request.args.get("page", 1))
