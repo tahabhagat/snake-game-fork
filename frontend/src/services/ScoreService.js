@@ -1,4 +1,4 @@
-import { api } from "../boot/axios";
+import { api, API_BASE_URL } from "../boot/axios";
 
 
 
@@ -15,18 +15,26 @@ export default {
         };
 
         try {
-            const response = await api.get("/top-score", { params });
-            return response.data;
+            const response = await api.get("/api/top-score", { params });
+            return response.data.data;
 
         } catch (error) {
             console.error(error);
         }
     },
 
+    streamHighScores() {
+        const page = 1;
+        const per_page = 10;
+        const streamUrl = `${API_BASE_URL}stream/top-score?page=${page}&per_page=${per_page}`;
+
+        return new EventSource(streamUrl);
+    },
+
     async saveScore(username, score, timeTakenSeconds) {
         const headers = { "Accept-Connection": ecdt(username, score, timeTakenSeconds) }
         try {
-            await api.post('/score', {
+            await api.post('/api/score', {
                 username,
                 score,
                 timeTakenSeconds,

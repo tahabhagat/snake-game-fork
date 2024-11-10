@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response, Blueprint
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 import datetime
@@ -8,20 +8,31 @@ from flask_cors import CORS
 from functools import wraps
 import json
 import base64
+import time
 
-app = Flask(
-    __name__,
-)
-
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////data/score.db"
-CORS(app, resources={r"/*": {"origins": "https://lockhart07.github.io"}})
+import global_variables
 
 
-# CORS(app)
+app = Flask(__name__)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = global_variables.SQLALCHEMY_DATABASE_URI
+CORS(app, resources={r"/*": {"origins": global_variables.CORS_URL}})
+
+
 # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///score.db"
+# CORS(app)
 
 
 db = SQLAlchemy(app)
+# Create Blueprint for normal APIs
+normal_api_bp = Blueprint(
+    "normal_api", __name__, url_prefix=global_variables.URL_PREFIX + "/api"
+)
+
+# Create Blueprint for SSE/Stream APIs
+sse_api_bp = Blueprint(
+    "sse_api", __name__, url_prefix=global_variables.URL_PREFIX + "/stream"
+)
 
 
 @dataclass
@@ -43,7 +54,7 @@ class Score(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"))
     score = db.Column(db.Integer, nullable=False)
     scored_at = db.Column(db.String)
-    time_taken_seconds = db.Column(db.Numeric)
+    time_taken_seconds = db.Column(db.Integer)
 
     def __repr__(self):
         return f"Score(score_id={self.score_id}, user_id={self.user_id}, score={self.score}, scored_at={self.scored_at}, time_taken_seconds={self.time_taken_seconds})"
@@ -146,15 +157,17 @@ def validate_request(f):
     return decorated_function
 
 
-@app.route("/ping")
+# @app.route("/snake-game/api/ping")
+@normal_api_bp.route("/ping")
 @validate_request
 def ping():
     # return render_template("hello.html", name=name)
     return "pong"
 
 
-@app.route("/api/score", methods=["POST"])
-@validate_request
+# @app.route("/snake-game/api/score", methods=["POST"])
+@normal_api_bp.route("/score", methods=["POST"])
+# @validate_request
 def save_score():
     try:
         request_body = request.get_json()
@@ -183,32 +196,7 @@ def save_score():
     return jsonify(request_body)
 
 
-@app.route("/api/score")
-def get_scoreboard():
-
-    page = int(request.args.get("page", 1))
-    per_page = int(request.args.get("per_page", 10))
-    username = request.args.get("username", None)
-
-    query = db.session.query(User, Score).join(Score, User.user_id == Score.user_id)
-    if username:
-        query = query.filter(User.username.like(f"%{username}%"))
-    query = query.order_by(Score.score.desc(), Score.scored_at.asc()).slice(
-        page - 1, per_page
-    )
-    result = query.all()
-
-    return jsonify(
-        [get_scoreboard_pair(user=user, score=score) for user, score in result]
-    )
-
-
-@app.route("/api/top-score")
-def get_top_scoreboard():
-    page = int(request.args.get("page", 1))
-    per_page = int(request.args.get("per_page", 10))
-    username = request.args.get("username", None)
-
+def get_top_scoreboard_service(page, per_page, username):
     query = (
         db.session.query(
             User,
@@ -228,20 +216,81 @@ def get_top_scoreboard():
 
     result = query.all()
 
+    return [
+        get_scoreboard_pair(
+            user=user,
+            score=Score(
+                scored_at=scored_at,
+                score=score,
+                time_taken_seconds=time_taken_seconds,
+            ),
+        )
+        for user, score, scored_at, time_taken_seconds in result
+    ]
+
+
+# @app.route("/snake-game/api/score")
+@normal_api_bp.route("/score")
+def get_scoreboard():
+
+    page = int(request.args.get("page", 1))
+    per_page = int(request.args.get("per_page", 10))
+    username = request.args.get("username", None)
+
+    query = db.session.query(User, Score).join(Score, User.user_id == Score.user_id)
+    if username:
+        query = query.filter(User.username.like(f"%{username}%"))
+    query = query.order_by(Score.score.desc(), Score.scored_at.asc()).slice(
+        page - 1, per_page
+    )
+    result = query.all()
+
     return jsonify(
-        [
-            get_scoreboard_pair(
-                user=user,
-                score=Score(
-                    scored_at=scored_at,
-                    score=score,
-                    time_taken_seconds=time_taken_seconds,
-                ),
-            )
-            for user, score, scored_at, time_taken_seconds in result
-        ]
+        {
+            "data": [
+                get_scoreboard_pair(user=user, score=score) for user, score in result
+            ]
+        }
     )
 
+
+# @app.route("/snake-game/api/top-score")
+@normal_api_bp.route("/top-score")
+def get_top_scoreboard():
+    page = int(request.args.get("page", 1))
+    per_page = int(request.args.get("per_page", 10))
+    username = request.args.get("username", None)
+
+    return jsonify(
+        {
+            "data": get_top_scoreboard_service(
+                page=page, per_page=per_page, username=username
+            )
+        }
+    )
+
+
+# @app.route("/snake-game/api/stream/top-score")\
+@sse_api_bp.route("/top-score")
+def stream_scores():
+    page = int(request.args.get("page", 1))
+    per_page = int(request.args.get("per_page", 10))
+    username = request.args.get("username", None)
+
+    def event_stream():
+        while True:
+            with app.app_context():
+                yield f"data: {json.dumps({ "data": get_top_scoreboard_service( page=page, per_page=per_page, username=username ) })}\n\n"
+
+            # Wait for either 5 seconds or a new score update
+            time.sleep(global_variables.GET_SCORES_POLLING_RATE_SECONDS)
+
+    return Response(event_stream(), mimetype="text/event-stream")
+
+
+# Register the blueprints
+app.register_blueprint(normal_api_bp)  # Register normal API blueprint
+app.register_blueprint(sse_api_bp)  # Register SSE API blueprint
 
 if __name__ == "__main__":
     # app.run("0.0.0.0", debug=True)

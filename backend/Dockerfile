@@ -10,7 +10,7 @@ USER snake
 WORKDIR /app
 
 # Copy the requirements file
-COPY --chown=snake:snake requirements.txt main.py ./
+COPY --chown=snake:snake requirements.txt global_variables.py main.py ./
 
 # Install the dependencies
 RUN pip install -r requirements.txt

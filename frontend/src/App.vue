@@ -104,18 +104,6 @@ function formatTime(totalSeconds) {
 }
 
 
-const updateHighscoresEvent = new CustomEvent('updateHighscores', {
-  bubbles: false, // prevent event from bubbling up the DOM
-  cancelable: true // allow event to be cancelled
-});
-
-
-// Listen for the updateHighscores event
-window.addEventListener('updateHighscores', async (event) => {
-  topScores.value = await ScoreService.getScores();
-});
-
-
 // Function to create a new apple at a random position not occupied by the snake
 function createApple() {
   let newApplePosition;
@@ -135,14 +123,35 @@ function isAppleOnSnake(position) {
   return snake.cells.some(cell => cell.x === position.x && cell.y === position.y);
 }
 
+
+function createScoresEventSource() {
+
+  const eventSource = ScoreService.streamHighScores()
+
+  eventSource.onmessage = function (event) {
+    topScores.value = JSON.parse(event.data).data;
+  };
+
+  eventSource.onerror = function () {
+    console.error("EventSource connection lost, attempting to reconnect...");
+    eventSource.close();  // Close the current connection
+
+    // Attempt to reconnect after a delay
+    setTimeout(() => {
+      console.log("Reconnecting to EventSource...");
+      createScoresEventSource();
+    }, 5000);
+  };
+
+  return eventSource;
+}
+
 async function setupScores() {
   personalBest.value = localStorage.getItem("personal_best") ?? 0;
 
-  window.dispatchEvent(updateHighscoresEvent);
-  setInterval(async () => {
-    window.dispatchEvent(updateHighscoresEvent);
-  }, 5000);
+  let scoresEvent = createScoresEventSource();
 }
+
 
 
 let context;
@@ -441,7 +450,6 @@ function updateGameState() {
       const timeTakenSeconds = timeTaken / 1000;
       ScoreService.saveScore(username, currentScore.value, timeTakenSeconds);
       currentScore.value = 0;
-      window.dispatchEvent(updateHighscoresEvent);
 
       snake = new Snake(160, 160, grid);
       apple = createApple();
