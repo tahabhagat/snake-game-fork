@@ -16,7 +16,7 @@ import global_variables
 app = Flask(__name__)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = global_variables.SQLALCHEMY_DATABASE_URI
-CORS(app, resources={r"/*": {"origins": global_variables.CORS_URL}})
+CORS(app, resources={r"/*": {"origins": global_variables.CORS_URLS}})
 
 
 # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///score.db"
@@ -283,7 +283,8 @@ def stream_scores():
                 data = {
                     "data": get_top_scoreboard_service(
                         page=page, per_page=per_page, username=username
-                    )
+                    ),
+                    "time": str(datetime.datetime.now()),
                 }
                 yield f"data: {json.dumps(data)}\n\n"
 
@@ -303,4 +304,4 @@ if __name__ == "__main__":
     host = "0.0.0.0"
     port = 8000
     print(f"STARTING WEBSERVER ON {host}:{port}")
-    serve(app=app, host=host, port=port, threads=10)
+    serve(app=app, host=host, port=port, threads=50)
