@@ -125,12 +125,15 @@ function isAppleOnSnake(position) {
 
 
 function createScoresEventSource() {
+  console.log("Creating eventsource for leaderboard")
 
   const eventSource = ScoreService.streamHighScores()
 
   eventSource.onmessage = function (event) {
+    console.log("message aya \n", new Date(), "\n", JSON.parse(event.data).time)
     topScores.value = JSON.parse(event.data).data;
   };
+
 
   eventSource.onerror = function () {
     console.error("EventSource connection lost, attempting to reconnect...");
