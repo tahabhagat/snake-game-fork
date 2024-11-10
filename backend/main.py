@@ -15,20 +15,24 @@ import global_variables
 
 app = Flask(__name__)
 
-# app.config["SQLALCHEMY_DATABASE_URI"] = global_variables.SQLALCHEMY_DATABASE_URI
-# CORS(app, resources={r"/*": {"origins": global_variables.CORS_URL}})
+app.config["SQLALCHEMY_DATABASE_URI"] = global_variables.SQLALCHEMY_DATABASE_URI
+CORS(app, resources={r"/*": {"origins": global_variables.CORS_URL}})
 
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///score.db"
-CORS(app)
+# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///score.db"
+# CORS(app)
 
 
 db = SQLAlchemy(app)
 # Create Blueprint for normal APIs
-normal_api_bp = Blueprint("normal_api", __name__, url_prefix="/api")
+normal_api_bp = Blueprint(
+    "normal_api", __name__, url_prefix=global_variables.URL_PREFIX + "/api"
+)
 
 # Create Blueprint for SSE/Stream APIs
-sse_api_bp = Blueprint("sse_api", __name__, url_prefix="/stream")
+sse_api_bp = Blueprint(
+    "sse_api", __name__, url_prefix=global_variables.URL_PREFIX + "/stream"
+)
 
 
 @dataclass
