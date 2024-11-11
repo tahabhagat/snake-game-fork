@@ -3,7 +3,7 @@ from flask import Flask, request, jsonify, Response, Blueprint
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 import datetime
-import uvicorn
+from waitress import serve
 from flask_cors import CORS
 from functools import wraps
 import json
@@ -350,5 +350,4 @@ if __name__ == "__main__":
     host = "0.0.0.0"
     port = 8000
     print(f"STARTING WEBSERVER ON {host}:{port}")
-    # serve(app=app, host=host, port=port, threads=100, connection_limit=500)
-    uvicorn.run(app, host=host, port=port)
+    serve(app=app, host=host, port=port, threads=100, connection_limit=500)
