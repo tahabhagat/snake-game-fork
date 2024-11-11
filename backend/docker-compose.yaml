@@ -10,3 +10,9 @@ services:
     volumes:
       # attach the relative directory 'data' to the container's /data path
       - /mnt/snake-game:/data
+    healthcheck:
+      test: curl --fail http://localhost:8000/api/ping || exit 1
+      interval: 40s
+      timeout: 30s
+      retries: 3
+      start_period: 60s
