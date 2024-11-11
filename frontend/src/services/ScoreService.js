@@ -29,13 +29,16 @@ export default {
             username: username
         };
 
-        try {
-            const response = await api.get("/api/top-score", { params });
-            return response.data.data;
 
-        } catch (error) {
-            console.error(error);
-        }
+        return api.get("/api/top-score", { params })
+            .then(response => {
+                return response.data.data;
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+
     },
 
     streamHighScores() {

@@ -136,13 +136,13 @@ function createScoresEventSource() {
   };
 
 
-  eventSource.onerror = function () {
+  eventSource.onerror = async function () {
     console.error("EventSource connection lost, attempting to reconnect...");
     eventSource.close();  // Close the current connection
 
     // After 5 SSE fails, fallback to normal api call
     if (shouldQueryNormalApiCounter >= 5) {
-      topScores.value = ScoreService.getScores()
+      topScores.value = await ScoreService.getScores()
       shouldQueryNormalApiCounter = 0
     }
     // Attempt to reconnect after a delay
