@@ -205,12 +205,23 @@ const SNAKE_INITIAL_LENGTH = 4;
 // (e.g. 16 * 25 = 400)
 var grid = 20;
 
-var username = localStorage.getItem("username");
-if (username === "" || username === null) {
-  username = prompt("Enter your username:");
-  console.log("Username: " + username);
+let username = localStorage.getItem("username");
+
+function setupUsername() {
+  // Keep prompting for the username until a valid one is provided
+  while (username === null || username === "null" || username.trim() === "") {
+    username = prompt("Enter your username:");
+    if (username && username.trim() !== "") {
+      console.log("Username: " + username);
+    } else {
+      alert("Please enter a valid username.");
+    }
+  }
   localStorage.setItem("username", username);
 }
+
+setupUsername();
+
 
 let pauses;
 let currentPauseStart;
