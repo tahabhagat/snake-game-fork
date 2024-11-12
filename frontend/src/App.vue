@@ -133,12 +133,10 @@ function createScoresEventSource() {
 
   // Attempt to reconnect after a delay
   setTimeout(async () => {
-    if (topScores.value.length === 0) {
+    if (!topScores || topScores.value.length === 0) {
       console.warn("Event source streaming may not be working, calling normal api");
       topScores.value = await ScoreService.getScores()
     }
-    console.log("Reconnecting to EventSource...");
-    createScoresEventSource();
   }, 2000);
 
   eventSource.onmessage = function (event) {
