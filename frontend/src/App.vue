@@ -139,7 +139,7 @@ function createScoresEventSource() {
     }
     console.log("Reconnecting to EventSource...");
     createScoresEventSource();
-  }, 5000);
+  }, 2000);
 
   eventSource.onmessage = function (event) {
     topScores.value = JSON.parse(event.data).data;
