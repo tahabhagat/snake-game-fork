@@ -51,7 +51,10 @@
             </td>
             <td :class="{ 'no-bottom': index === topScores.length - 1 }">{{ score.score }}</td>
             <td :class="{ 'no-bottom': index === topScores.length - 1 }">{{ new
-              Date(score.scoredAt).toLocaleString("en-UK", { dateStyle: 'short', timeStyle: 'short', hour12: true }) }}
+              Date(score.scoredAt).toLocaleString("en-UK", {
+                hour12: true, year: "2-digit",
+                month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric"
+              }) }}
             </td>
             <td :class="{ 'no-bottom': index === topScores.length - 1 }">{{ formatTime(score.timeTakenSeconds) }}</td>
           </tr>
