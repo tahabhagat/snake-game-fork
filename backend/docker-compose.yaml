@@ -11,8 +11,8 @@ services:
       # attach the relative directory 'data' to the container's /data path
       - /mnt/snake-game:/data
     healthcheck:
-      test: curl --fail http://localhost:8000/snake-game/api/ping || exit 1
-      interval: 40s
-      timeout: 30s
-      retries: 3
-      start_period: 60s
+      test: ["CMD", "python3", "-c", "import socket; s=socket.socket(); s.settimeout(5); s.connect(('localhost', 8000)); s.close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
