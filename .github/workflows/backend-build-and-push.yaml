@@ -46,3 +46,18 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Restart Docker Compose
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ${{ secrets.ORACLE_USERNAME }}
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          script: |
+            cd /path/to/your/app
+            docker-compose down
+            docker-compose pull  # Pull latest images if using remote registry
+            docker-compose up -d
