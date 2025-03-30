@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     vue(),
   ],
-  base: '/snake-game/',  // Set to '/snake-game/' for GitHub Pages
+  base: '/',  // Set to '/snake-game/' for GitHub Pages
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
