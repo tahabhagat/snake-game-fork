@@ -1,82 +1,80 @@
-# Snake Game with Leaderboard - [Play](https://slitherbite.lockhart.in)
+# 🐍 Snake Game with Leaderboard 
 
-A classic snake game with a competitive twist! Climb the ranks and compete with others in real-time.
+[![Play Now](https://img.shields.io/badge/Play-Now-brightgreen)](https://slitherbite.lockhart.in)
+[![Vue.js](https://img.shields.io/badge/Vue.js-3-4FC08D?logo=vue.js)](https://vuejs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110.0-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## Features
-- Play the classic snake game with a modern twist
-- Compete with others in real-time on the global leaderboard
-- Track your personal best scores and strive to beat them
-- Responsive design that works on both desktop and mobile
-- Real-time score updates and leaderboard rankings
+A modern take on the classic snake game with real-time competitive features! Challenge yourself and compete with players worldwide on our global leaderboard.
 
-## Tech Stack
+## ✨ Features
+
+- 🎮 Classic snake gameplay with modern controls
+- 🏆 Real-time global leaderboard
+- 📊 Personal best tracking
+- 📱 Responsive design for both desktop and mobile
+- ⚡ Real-time score updates
+- 🔒 Secure score submission system
+
+## 🛠️ Tech Stack
+
 ### Frontend
-- Vue.js 3
-- Vite
-- Axios for API communication
-- Modern UI with responsive design
+- Vue.js 3 - Progressive JavaScript Framework
+- Vite - Next Generation Frontend Tooling
+- Axios - HTTP Client
+- Modern responsive UI design
 
 ### Backend
-- Flask (Python)
-- SQLAlchemy for database management
-- CORS support for cross-origin requests
-- Production-ready with Gunicorn and Gevent
+- FastAPI - Modern Python Web Framework
+- SQLAlchemy - SQL Toolkit and ORM
+- Pydantic - Data Validation
+- SSE (Server-Sent Events) for real-time updates
 
-## Development Setup
+## 🚀 Getting Started
 
-### Frontend
+### Frontend Development
 ```bash
 cd frontend
 npm install
-npm run dev  # for development
-npm run build  # for production build
+npm run dev    # Start development server
+npm run build  # Build for production
 ```
 
-### Backend
+### Backend Development
 ```bash
 cd backend
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
-python app.py  # for development
+python app.py  # Start development server
 ```
 
-## Deployment
+## 🐳 Docker Deployment
 
-### Docker Deployment
-The backend service can be deployed using Docker. Here's a sample docker-compose configuration:
+The backend can be deployed using Docker:
 
-```yaml
-services:
-  snake-game-score-service:
-    container_name: snake-game-score-service
-    image: ghcr.io/lockhart07/snake-game:latest
-    pull_policy: always
-    tty: true
-    stdin_open: true
-    ports:
-      - "8000:8000"
-    volumes:
-      - /mnt/snake-game:/data
-    healthcheck:
-      test: ["CMD", "python3", "-c", "import socket; s=socket.socket(); s.settimeout(5); s.connect(('localhost', 8000)); s.close()"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+```bash
+# Create data directory
+mkdir -p /mnt/snake-game
+
+# Start the service
+docker-compose up -d
 ```
 
-To deploy using Docker:
-1. Create a directory for persistent data: `mkdir -p /mnt/snake-game`
-2. Run the service: `docker-compose up -d`
+The service includes:
+- 🔄 Automatic container health checks
+- 💾 Persistent data storage
+- 🔄 Automatic image updates
 
-The service will be available at `http://localhost:8000` and includes:
-- Automatic container health checks
-- Persistent data storage
-- Automatic image updates with `pull_policy: always`
+## 📦 Deployment
 
-### GitHub Pages Deployment
-The frontend is automatically deployed to GitHub Pages when changes are pushed to the main branch. The deployment process is handled by GitHub Actions.
+- Frontend: Automatically deployed to GitHub Pages on push to main branch
+- Backend: Deployed via Docker with automatic health checks and updates
 
-## License
-This project is licensed under the terms of the MIT License - see the [LICENSE](LICENSE) file for details.
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to open issues and pull requests.
