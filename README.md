@@ -9,12 +9,12 @@ A modern take on the classic snake game with real-time competitive features! Cha
 
 ## ✨ Features
 
-- 🎮 Classic snake gameplay with modern controls
-- 🏆 Real-time global leaderboard
-- 📊 Personal best tracking
-- 📱 Responsive design for both desktop and mobile
-- ⚡ Real-time score updates
-- 🔒 Secure score submission system
+- 🎮 Classic snake gameplay with modern controls and smooth animations
+- 🏆 Real-time global leaderboard with live score updates
+- 📊 Personal best tracking and performance analytics
+- 📱 Fully responsive design optimized for desktop
+- 🔒 Advanced anti-cheat system with request validation and replay protection
+- 🤫 Hidden auto-play cheat for those who can find it!
 
 ## 🛠️ Tech Stack
 
