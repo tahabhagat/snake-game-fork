@@ -2,7 +2,7 @@
 
 [![Play Now](https://img.shields.io/badge/Play-Now-brightgreen)](https://slitherbite.lockhart.in)
 [![Vue.js](https://img.shields.io/badge/Vue.js-3-4FC08D?logo=vue.js)](https://vuejs.org/)
-[![Flask](https://img.shields.io/badge/Flask-3.0.2-000000?logo=flask)](https://flask.palletsprojects.com/)
+[![Flask](https://img.shields.io/badge/Flask-3.0.3-000000?logo=flask)](https://flask.palletsprojects.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A modern take on the classic snake game with real-time competitive features! Challenge yourself and compete with players worldwide on our global leaderboard.
