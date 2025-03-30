@@ -57,7 +57,7 @@ jobs:
           username: ${{ secrets.ORACLE_USERNAME }}
           key: ${{ secrets.ORACLE_SSH_KEY }}
           script: |
-            cd /path/to/your/app
+            cd ${{ secrets.ORACLE_APP_PATH }}
             docker compose down
             docker compose pull
             docker compose up -d
