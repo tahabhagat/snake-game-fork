@@ -1,4 +1,4 @@
-# Snake Game with Leaderboard - [Play](https://lockhart07.github.io/snake-game/)
+# Snake Game with Leaderboard - [Play](https://slitherbite.lockhart.in)
 A classic snake game with a competitive twist! Climb the ranks and compete with others.
 ## Features
  - Play the classic snake game with a modern twist
