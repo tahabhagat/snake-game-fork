@@ -31,7 +31,7 @@ class Score(SQLModel, table=True):
     user_id: Optional[int] = Field(default=None, foreign_key="users.user_id")
     score: int = Field(nullable=False)
     scored_at: str = Field(default=None)
-    time_taken_seconds: int = Field(default=None)
+    time_taken_seconds: float = Field(default=None)
 
     def __repr__(self):
         return f"Score(score_id={self.score_id}, user_id={self.user_id}, score={self.score}, scored_at={self.scored_at}, time_taken_seconds={self.time_taken_seconds})"
@@ -49,14 +49,14 @@ SQLModel.metadata.create_all(engine)
 class ScoreRequest(BaseModel):
     username: str
     score: int
-    timeTakenSeconds: int
+    timeTakenSeconds: float
 
 
 # Define response models
 class ScoreboardEntry(BaseModel):
     username: str
     score: int
-    timeTakenSeconds: int
+    timeTakenSeconds: float
     scoredAt: Optional[str] = None
 
 
