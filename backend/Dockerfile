@@ -13,7 +13,7 @@ WORKDIR /app
 COPY --chown=snake:snake requirements.txt global_variables.py main.py ./
 
 # Install the dependencies
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt --no-warn-script-location
 
 # Ensure user-installed packages are in PATH
 ENV PATH="/home/sherlock/.local/bin:${PATH}"
