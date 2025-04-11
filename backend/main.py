@@ -1,17 +1,16 @@
-from typing import List, Optional, Dict, Any, Union
+from typing import List, Optional, Dict, Any
 import datetime
 import json
 import base64
-import time
-from fastapi import FastAPI, Depends, Request, Response, HTTPException, Query, status
+from fastapi import FastAPI, Depends, Request, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from sqlmodel import Field, Session, SQLModel, create_engine, select, desc, asc, column
-from sqlalchemy import func, Column, String, Integer
+from sqlalchemy import func 
 from sqlalchemy.ext.asyncio import create_async_engine
 from pydantic import BaseModel
-from starlette.middleware.base import BaseHTTPMiddleware
 import global_variables
+import asyncio
 
 # Define SQLModel models
 class User(SQLModel, table=True):
@@ -362,7 +361,6 @@ async def stream_scores(
 
 if __name__ == "__main__":
     import uvicorn
-    import asyncio
 
     print("BOOTING UP THE REACTORS!!!")
     host = "0.0.0.0"
