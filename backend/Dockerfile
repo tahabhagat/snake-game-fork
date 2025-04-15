@@ -28,4 +28,4 @@ EXPOSE 8000
 LABEL maintainer="Jenslee Dsouza <dsouzajenslee@gmail.com>"
 
 # Start Uvicorn with the root path
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
