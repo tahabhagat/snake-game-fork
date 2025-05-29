@@ -200,7 +200,7 @@ onMounted(async () => {
   // start the game
   requestAnimationFrame(loop);
 
-  pauses = []
+  // pauses = []
 
   snake = new Snake(160, 160, grid);
   apple = createApple();
