@@ -1,27 +1,38 @@
-# Use an official Python runtime as a parent image
-FROM python:3.11-slim
+# Use a Python image with uv pre-installed
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
-
-# Set the user to snake
+# Create a non-root user to run the application
+# This is a good practice for security and compatibility with some libraries
 RUN useradd -m snake
 USER snake
 
-# Set the working directory to /app
+# Install the project into `/app`
 WORKDIR /app
 
-# Copy the requirements file
-COPY --chown=snake:snake requirements.txt global_variables.py main.py ./
+# Enable bytecode compilation
+ENV UV_COMPILE_BYTECODE=1
+# Copy from the cache instead of linking since it's a mounted volume
+ENV UV_LINK_MODE=copy
+# Ensure installed tools can be executed out of the box
+ENV UV_TOOL_BIN_DIR=/usr/local/bin
 
-# Install the dependencies
-RUN pip install -r requirements.txt
+# Install the project's dependencies using the lockfile and settings
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --locked --no-install-project --no-dev
 
-# Expose the port
-EXPOSE 8000
+# Then, add the rest of the project source code and install it
+# Installing separately from its dependencies allows optimal layer caching
+COPY --chown=snake:snake . /app
 
-# Set the maintainer
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-dev
+# Place executables in the environment at the front of the path
+ENV PATH="/app/.venv/bin:$PATH"
+# Reset the entrypoint, don't invoke `uv`
+ENTRYPOINT []
+
 LABEL maintainer="Jenslee Dsouza <dsouzajenslee@gmail.com>"
 
-# Run the command to start the application
-# CMD ["python", "-u", "main.py"]
-# gunicorn -w 1 -k gevent -b 0.0.0.0:8000 main:app
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv","run","uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
