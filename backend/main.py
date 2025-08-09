@@ -1,17 +1,16 @@
-from typing import List, Optional, Dict, Any, Union
+from typing import List, Optional, Dict, Any
 import datetime
 import json
 import base64
-import time
-from fastapi import FastAPI, Depends, Request, Response, HTTPException, Query, status
+from fastapi import FastAPI, Depends, Request, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from sqlmodel import Field, Session, SQLModel, create_engine, select, desc, asc, column
-from sqlalchemy import func, Column, String, Integer
+from sqlalchemy import func 
 from sqlalchemy.ext.asyncio import create_async_engine
 from pydantic import BaseModel
-from starlette.middleware.base import BaseHTTPMiddleware
 import global_variables
+import asyncio
 
 # Define SQLModel models
 class User(SQLModel, table=True):
@@ -32,7 +31,7 @@ class Score(SQLModel, table=True):
     user_id: Optional[int] = Field(default=None, foreign_key="users.user_id")
     score: int = Field(nullable=False)
     scored_at: str = Field(default=None)
-    time_taken_seconds: int = Field(default=None)
+    time_taken_seconds: float = Field(default=None)
 
     def __repr__(self):
         return f"Score(score_id={self.score_id}, user_id={self.user_id}, score={self.score}, scored_at={self.scored_at}, time_taken_seconds={self.time_taken_seconds})"
@@ -50,14 +49,14 @@ SQLModel.metadata.create_all(engine)
 class ScoreRequest(BaseModel):
     username: str
     score: int
-    timeTakenSeconds: int
+    timeTakenSeconds: float
 
 
 # Define response models
 class ScoreboardEntry(BaseModel):
     username: str
     score: int
-    timeTakenSeconds: int
+    timeTakenSeconds: float
     scoredAt: Optional[str] = None
 
 
@@ -362,7 +361,6 @@ async def stream_scores(
 
 if __name__ == "__main__":
     import uvicorn
-    import asyncio
 
     print("BOOTING UP THE REACTORS!!!")
     host = "0.0.0.0"

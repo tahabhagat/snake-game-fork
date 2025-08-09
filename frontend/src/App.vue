@@ -200,7 +200,7 @@ onMounted(async () => {
   // start the game
   requestAnimationFrame(loop);
 
-  pauses = []
+  // pauses = []
 
   snake = new Snake(160, 160, grid);
   apple = createApple();
@@ -235,7 +235,7 @@ function setupUsername() {
 setupUsername();
 
 
-let pauses;
+
 let currentPauseStart;
 function pause_game() {
   if (game_paused) return
@@ -246,7 +246,7 @@ function pause_game() {
 function unpause_game() {
   if (!game_paused) return
   game_paused = false;
-  pauses.push(new Date().getTime() - currentPauseStart.getTime())
+  snake.pauses.push(new Date().getTime() - currentPauseStart.getTime())
   currentPauseStart = null;
   requestAnimationFrame(loop);
 }
@@ -268,6 +268,7 @@ class Snake {
     this.maxCells = SNAKE_INITIAL_LENGTH;
     this.autoplay = false;
     this.birthDatetime = new Date()
+    this.pauses = [];
 
   }
 
@@ -489,12 +490,11 @@ function updateGameState() {
   // Check for collisions with self
   for (let i = 1; i < snake.cells.length; i++) {
     if (`${snake.cells[i].x},${snake.cells[i].y}` === headPosition) {
-      // const timeTakenSeconds = (new Date().getTime() - snake.birthDatetime.getTime()) / 1000;
-
       let timeTaken = (new Date().getTime() - snake.birthDatetime.getTime());
-      pauses.forEach((currentValue) => {
-        timeTaken = timeTaken - currentValue;
-      });
+      // Sum up all pause durations
+      const totalPauseTime = snake.pauses.reduce((sum, pause) => sum + pause, 0);
+      // Subtract total pause time from time taken
+      timeTaken = Math.max(0, timeTaken - totalPauseTime);
       const timeTakenSeconds = timeTaken / 1000;
       console.log(timeTakenSeconds)
       ScoreService.saveScore(username, currentScore.value, timeTakenSeconds);
