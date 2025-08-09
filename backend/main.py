@@ -207,7 +207,6 @@ async def save_score(validated: dict = Depends(validate_score_request),db: Sessi
         scored_at=datetime.datetime.now(datetime.UTC).isoformat(),
         time_taken_seconds=score_request.timeTakenSeconds,
     )
-    print("RECIEVED A SCORE: ", new_score)
 
     db.add(new_score)
     db.commit()
