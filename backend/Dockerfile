@@ -1,19 +1,16 @@
 # Use a Python image with uv pre-installed
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 
 # Create a non-root user to run the application
 # This is a good practice for security and compatibility with some libraries
 RUN useradd -m snake
 
-# Set the working directory to /code and change ownership
-WORKDIR /code
-RUN chown -R snake:snake /code
+# Install the project into `/app`
+WORKDIR /app
+RUN chown -R snake:snake /app
 
 # Switch to the non-root user
 USER snake
-
-# Install the project into `/app`
-WORKDIR /app
 
 # Enable bytecode compilation
 ENV UV_COMPILE_BYTECODE=1
